@@ -1,3 +1,3 @@
 # ArgoNeuT_NueCC
 
-## ArgoNeuT
+## ArNeuT
