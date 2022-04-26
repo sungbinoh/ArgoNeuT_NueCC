@@ -3,7 +3,7 @@ export ArNeuT_LIB_PATH=$ArNeuT_WD/lib/
 mkdir -p $ArNeuT_LIB_PATH
 mkdir -p $ArNeuT_WD/tar
 
-export ArNeuTV="Run1_v1"
+export ArNeuTV="v1"
 mkdir -p $ArNeuT_WD/data/$ArNeuTV
 export DATA_DIR=$ArNeuT_WD/data/$ArNeuTV
 
