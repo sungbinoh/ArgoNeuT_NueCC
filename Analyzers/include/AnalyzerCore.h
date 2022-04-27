@@ -10,6 +10,8 @@
 #include "TRandom.h"
 
 #include "StandardRecoNtuple.h"
+#include "Event.h"
+#include "FiducialVolume.h"
 
 class AnalyzerCore {
 public:
@@ -79,6 +81,8 @@ public:
   // Tools
   //==================
 
+  Event GetEvent();
+  void initializeAnalyzerTools();
 
   //==================
   // Functions

@@ -3,6 +3,9 @@
 
 #include "TString.h"
 #include "TObject.h"
+#include <iostream>
+
+using namespace std;
 
 class Event : public TObject {
 public:
