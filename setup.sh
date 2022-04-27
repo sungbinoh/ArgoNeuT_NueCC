@@ -14,8 +14,8 @@ export ArNeuTLogWebDir=''
 
 #### Setup Directories ####
 #export SCRAM_ARCH=slc7_amd64_gcc700
-#source /usr/local/bin/thisroot.sh
-export ROOTSYS=/usr/local/opt/root
+source /usr/local/bin/thisroot.sh
+#export ROOTSYS=/usr/local/opt/root/include/root
 
 echo "@@@@ Setup output directories"
 export ArNeuTRunlogDir=$ArNeuT_WD/output/log

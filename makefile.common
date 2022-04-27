@@ -1,4 +1,4 @@
-ARCH_LOC := $(wildcard $(shell root-config --prefix)/etc/Makefile.arch)
+ARCH_LOC := $(wildcard $(shell root-config --prefix)/etc/root/Makefile.arch)
 include $(ARCH_LOC)
 
 MAKEFLAGS = --no-print-directory -r -s
