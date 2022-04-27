@@ -12,7 +12,9 @@ export ArNeuTLogEmail='sungbin.oh@cern.ch'
 export ArNeuTLogWeb=''
 export ArNeuTLogWebDir=''
 
-#### use cvmfs for root ####
+#### Setup Directories ####
+source /usr/local/bin/thisroot.sh
+
 echo "@@@@ Setup output directories"
 export ArNeuTRunlogDir=$ArNeuT_WD/output/log
 export ArNeuTOutputDir=$ArNeuT_WD/output/result
