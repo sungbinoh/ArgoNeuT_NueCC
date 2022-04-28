@@ -3,7 +3,8 @@
 ## ArNeuT
 
 It should run well in linux, when PATH for the root is well defined.
-
+Check L17 - L27 of setup.sh for it.
+It depends on setup of the server that you are using.
 
 ### Complie
 
