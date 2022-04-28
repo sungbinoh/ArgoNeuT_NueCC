@@ -1,11 +1,13 @@
 #include "AnalyzerCore.h"
 #include "StandardRecoNtuple.h"
+#include "NewStandardRecoNtuple.h"
 
 AnalyzerCore::AnalyzerCore(){
   MaxEvent = -1;
   NSkipEvent = 0;
   LogEvery = 1000;
   MCSample = "";
+  WhichTree = "";
   IsData = true;
   Userflags.clear();
   outfile = NULL;
@@ -65,6 +67,7 @@ void AnalyzerCore::Loop(){
   cout << "[AnalyzerCore::Loop] MaxEvent = " << MaxEvent << endl;
   cout << "[AnalyzerCore::Loop] NSkipEvent = " << NSkipEvent << endl;
   cout << "[AnalyzerCore::Loop] LogEvery = " << LogEvery << endl;
+  cout << "[AnalyzerCore::Loop] WhichTree = " << WhichTree << endl;
   cout << "[AnalyzerCore::Loop] IsData = " << IsData << endl; 
   cout << "[AnalyzerCore::Loop] Userflags = {" << endl;
   for(unsigned int i=0; i<Userflags.size(); i++){
@@ -123,7 +126,7 @@ Event AnalyzerCore::GetEvent(){
 
   Event ev;
   ev.SetIsData(IsData);
-
+  ev.SetWhichTree(WhichTree);
   return ev;
 
 }
@@ -138,8 +141,8 @@ void AnalyzerCore::initializeAnalyzerTools(){
 void AnalyzerCore::Init(){
 
   cout << "Let initiallize!" << endl;
-  this_StandardRecoNtuple.Init_StandardReco(fChain);
-  
+  if(WhichTree == "Default") this_StandardRecoNtuple.Init_StandardReco(fChain);
+  if(WhichTree == "New") this_NewStandardRecoNtuple.Init_NewStandardReco(fChain);
 }
 
 //==================

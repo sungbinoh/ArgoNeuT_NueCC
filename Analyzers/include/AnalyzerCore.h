@@ -10,6 +10,7 @@
 #include "TRandom.h"
 
 #include "StandardRecoNtuple.h"
+#include "NewStandardRecoNtuple.h"
 #include "Event.h"
 #include "FiducialVolume.h"
 
@@ -20,11 +21,12 @@ public:
   ~AnalyzerCore();
 
   StandardRecoNtuple this_StandardRecoNtuple;
+  NewStandardRecoNtuple this_NewStandardRecoNtuple;
 
   Long64_t MaxEvent, NSkipEvent;
   int LogEvery;
   TString MCSample;
-  TString Simulator;
+  TString WhichTree;
   bool IsData;
   vector<TString> Userflags;
 
@@ -43,7 +45,8 @@ public:
   //==================
   virtual void SetTreeName(){
     TString tname = "";
-    tname = "analysistree/anatree";
+    if(WhichTree == "Default") tname = "analysistree/anatree";
+    if(WhichTree == "New") tname = "anatree";
     fChain = new TChain(tname);
   }
 

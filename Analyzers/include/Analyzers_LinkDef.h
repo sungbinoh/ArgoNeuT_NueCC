@@ -6,6 +6,7 @@
 #pragma link C++ nestedclasses;
 
 #pragma link C++ class StandardRecoNtuple+;
+#pragma link C++ class NewStandardRecoNtuple+;
 #pragma link C++ class AnalyzerCore+;
 #pragma link C++ class NueCCAnalyzer+;
 

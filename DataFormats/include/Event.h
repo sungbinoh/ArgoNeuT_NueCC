@@ -14,10 +14,12 @@ public:
   ~Event();
 
   void SetIsData(bool isdata);
+  void SetWhichTree(TString whichtree);
   inline bool IsData() const {return j_IsData;}
 
 private:
   bool j_IsData;
+  TString j_WhichTree;
   ClassDef(Event,1)
 };
 

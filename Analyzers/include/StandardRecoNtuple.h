@@ -15,10 +15,10 @@
 const Int_t MAX_ntracks_reco = 500;
 const Int_t MAX_ntracks_minos = 100;
 const Int_t MAX_nvertices = 500;
-const Int_t Max_no_hits = 20000;
-const Int_t Max_no_clusters = 1000;
-const Int_t Max_geant_list_size = 20000;
-const Int_t Max_genie_no_primaries = 500;
+const Int_t MAX_no_hits = 20000;
+const Int_t MAX_no_clusters = 1000;
+const Int_t MAX_geant_list_size = 20000;
+const Int_t MAX_genie_no_primaries = 500;
 
 using namespace std;
 
@@ -207,29 +207,29 @@ public :
    Double_t        vtx_t1[MAX_nvertices];   //[nvertices]
    Int_t           no_dead_wires_muon;
    Int_t           no_hits;
-   Int_t           hit_plane[Max_no_hits];   //[no_hits]
-   Int_t           hit_wire[Max_no_hits];   //[no_hits]
-   Int_t           hit_channel[Max_no_hits];   //[no_hits]
-   Double_t        hit_peakT[Max_no_hits];   //[no_hits]
-   Double_t        hit_peakTcorr[Max_no_hits];   //[no_hits]
-   Double_t        hit_charge[Max_no_hits];   //[no_hits]
-   Double_t        hit_ph[Max_no_hits];   //[no_hits]
-   Int_t           hit_trkid[Max_no_hits];   //[no_hits]
-   Double_t        hit_etruth[Max_no_hits];   //[no_hits]
-   Float_t         hit_rawdQds[Max_no_hits];   //[no_hits]
-   Float_t         hit_dQds[Max_no_hits];   //[no_hits]
-   Float_t         hit_dEds[Max_no_hits];   //[no_hits]
-   Float_t         hit_ds[Max_no_hits];   //[no_hits]
-   Float_t         hit_resrange[Max_no_hits];   //[no_hits]
-   Float_t         hit_x[Max_no_hits];   //[no_hits]
-   Float_t         hit_y[Max_no_hits];   //[no_hits]
-   Float_t         hit_z[Max_no_hits];   //[no_hits]
+   Int_t           hit_plane[MAX_no_hits];   //[no_hits]
+   Int_t           hit_wire[MAX_no_hits];   //[no_hits]
+   Int_t           hit_channel[MAX_no_hits];   //[no_hits]
+   Double_t        hit_peakT[MAX_no_hits];   //[no_hits]
+   Double_t        hit_peakTcorr[MAX_no_hits];   //[no_hits]
+   Double_t        hit_charge[MAX_no_hits];   //[no_hits]
+   Double_t        hit_ph[MAX_no_hits];   //[no_hits]
+   Int_t           hit_trkid[MAX_no_hits];   //[no_hits]
+   Double_t        hit_etruth[MAX_no_hits];   //[no_hits]
+   Float_t         hit_rawdQds[MAX_no_hits];   //[no_hits]
+   Float_t         hit_dQds[MAX_no_hits];   //[no_hits]
+   Float_t         hit_dEds[MAX_no_hits];   //[no_hits]
+   Float_t         hit_ds[MAX_no_hits];   //[no_hits]
+   Float_t         hit_resrange[MAX_no_hits];   //[no_hits]
+   Float_t         hit_x[MAX_no_hits];   //[no_hits]
+   Float_t         hit_y[MAX_no_hits];   //[no_hits]
+   Float_t         hit_z[MAX_no_hits];   //[no_hits]
    Int_t           no_clusters;
-   Int_t           clusters_planeNo[Max_no_clusters];   //[no_clusters]
-   Double_t        Start_pt_w_Cl[Max_no_clusters];   //[no_clusters]
-   Double_t        Start_pt_t_Cl[Max_no_clusters];   //[no_clusters]
-   Double_t        End_pt_w_Cl[Max_no_clusters];   //[no_clusters]
-   Double_t        End_pt_t_Cl[Max_no_clusters];   //[no_clusters]
+   Int_t           clusters_planeNo[MAX_no_clusters];   //[no_clusters]
+   Double_t        Start_pt_w_Cl[MAX_no_clusters];   //[no_clusters]
+   Double_t        Start_pt_t_Cl[MAX_no_clusters];   //[no_clusters]
+   Double_t        End_pt_w_Cl[MAX_no_clusters];   //[no_clusters]
+   Double_t        End_pt_t_Cl[MAX_no_clusters];   //[no_clusters]
    Int_t           fNhitsClust;
    Double_t        two_trackstart_dcosx_reco[2];
    Double_t        two_trackstart_dcosy_reco[2];
@@ -239,36 +239,36 @@ public :
    Double_t        two_trackexit_dcosz_reco[2];
    Int_t           no_primaries;
    Int_t           geant_list_size;
-   Int_t           pdg[Max_geant_list_size];   //[geant_list_size]
-   Double_t        Eng[Max_geant_list_size];   //[geant_list_size]
-   Double_t        Px[Max_geant_list_size];   //[geant_list_size]
-   Double_t        Py[Max_geant_list_size];   //[geant_list_size]
-   Double_t        Pz[Max_geant_list_size];   //[geant_list_size]
-   Double_t        StartPointx[Max_geant_list_size];   //[geant_list_size]
-   Double_t        StartPointy[Max_geant_list_size];   //[geant_list_size]
-   Double_t        StartPointz[Max_geant_list_size];   //[geant_list_size]
-   Double_t        EndPointx[Max_geant_list_size];   //[geant_list_size]
-   Double_t        EndPointy[Max_geant_list_size];   //[geant_list_size]
-   Double_t        EndPointz[Max_geant_list_size];   //[geant_list_size]
-   Int_t           NumberDaughters[Max_geant_list_size];   //[geant_list_size]
-   Int_t           Mother[Max_geant_list_size];   //[geant_list_size]
-   Int_t           TrackId[Max_geant_list_size];   //[geant_list_size]
-   Int_t           process_primary[Max_geant_list_size];   //[geant_list_size]
-   Int_t           orig[Max_geant_list_size];   //[geant_list_size]
+   Int_t           pdg[MAX_geant_list_size];   //[geant_list_size]
+   Double_t        Eng[MAX_geant_list_size];   //[geant_list_size]
+   Double_t        Px[MAX_geant_list_size];   //[geant_list_size]
+   Double_t        Py[MAX_geant_list_size];   //[geant_list_size]
+   Double_t        Pz[MAX_geant_list_size];   //[geant_list_size]
+   Double_t        StartPointx[MAX_geant_list_size];   //[geant_list_size]
+   Double_t        StartPointy[MAX_geant_list_size];   //[geant_list_size]
+   Double_t        StartPointz[MAX_geant_list_size];   //[geant_list_size]
+   Double_t        EndPointx[MAX_geant_list_size];   //[geant_list_size]
+   Double_t        EndPointy[MAX_geant_list_size];   //[geant_list_size]
+   Double_t        EndPointz[MAX_geant_list_size];   //[geant_list_size]
+   Int_t           NumberDaughters[MAX_geant_list_size];   //[geant_list_size]
+   Int_t           Mother[MAX_geant_list_size];   //[geant_list_size]
+   Int_t           TrackId[MAX_geant_list_size];   //[geant_list_size]
+   Int_t           process_primary[MAX_geant_list_size];   //[geant_list_size]
+   Int_t           orig[MAX_geant_list_size];   //[geant_list_size]
    Double_t        Kin_Eng_reco[MAX_ntracks_reco];   //[ntracks_reco]
    Double_t        muon_Kin_Eng_reco;
    Int_t           genie_no_primaries;
-   Int_t           genie_primaries_pdg[Max_genie_no_primaries];   //[genie_no_primaries]
-   Double_t        genie_Eng[Max_genie_no_primaries];   //[genie_no_primaries]
-   Double_t        genie_Px[Max_genie_no_primaries];   //[genie_no_primaries]
-   Double_t        genie_Py[Max_genie_no_primaries];   //[genie_no_primaries]
-   Double_t        genie_Pz[Max_genie_no_primaries];   //[genie_no_primaries]
-   Double_t        genie_P[Max_genie_no_primaries];   //[genie_no_primaries]
-   Int_t           genie_status_code[Max_genie_no_primaries];   //[genie_no_primaries]
-   Double_t        genie_mass[Max_genie_no_primaries];   //[genie_no_primaries]
-   Int_t           genie_trackID[Max_genie_no_primaries];   //[genie_no_primaries]
-   Int_t           genie_ND[Max_genie_no_primaries];   //[genie_no_primaries]
-   Int_t           genie_mother[Max_genie_no_primaries];   //[genie_no_primaries]
+   Int_t           genie_primaries_pdg[MAX_genie_no_primaries];   //[genie_no_primaries]
+   Double_t        genie_Eng[MAX_genie_no_primaries];   //[genie_no_primaries]
+   Double_t        genie_Px[MAX_genie_no_primaries];   //[genie_no_primaries]
+   Double_t        genie_Py[MAX_genie_no_primaries];   //[genie_no_primaries]
+   Double_t        genie_Pz[MAX_genie_no_primaries];   //[genie_no_primaries]
+   Double_t        genie_P[MAX_genie_no_primaries];   //[genie_no_primaries]
+   Int_t           genie_status_code[MAX_genie_no_primaries];   //[genie_no_primaries]
+   Double_t        genie_mass[MAX_genie_no_primaries];   //[genie_no_primaries]
+   Int_t           genie_trackID[MAX_genie_no_primaries];   //[genie_no_primaries]
+   Int_t           genie_ND[MAX_genie_no_primaries];   //[genie_no_primaries]
+   Int_t           genie_mother[MAX_genie_no_primaries];   //[genie_no_primaries]
    Int_t           evtwgt_nfunc;
    vector<string>  *evtwgt_funcname;
    vector<int>     *evtwgt_nweight;
