@@ -21,6 +21,7 @@ public:
 
   void SetFV(double this_x_low, double this_x_high, double this_y_low, double this_y_high, double this_z_low, double this_z_high);
   bool InFV(TVector3 this_position);
+  bool InFV_XY(TVector2 this_position);
   inline double X_Low() const { return x_low; }
   inline double X_High() const { return x_high; }
   inline double Y_Low() const { return y_low; }

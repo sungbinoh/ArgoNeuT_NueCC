@@ -13,7 +13,7 @@ export ArNeuTLogWeb=''
 export ArNeuTLogWebDir=''
 
 #### Setup Directories ####
-source /usr/local/bin/thisroot.sh
+#source /usr/local/bin/thisroot.sh
 
 echo "@@@@ Setup output directories"
 export ArNeuTRunlogDir=$ArNeuT_WD/output/log

@@ -42,7 +42,7 @@ public:
   //==================
   virtual void SetTreeName(){
     TString tname = "";
-    tname = "anatree";
+    tname = "analysistree/anatree";
     fChain = new TChain(tname);
   }
 

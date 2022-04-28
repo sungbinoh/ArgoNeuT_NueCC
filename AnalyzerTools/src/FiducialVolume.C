@@ -29,6 +29,15 @@ bool FiducialVolume::InFV(TVector3 this_position){
   
 }
 
+bool FiducialVolume::InFV_XY(TVector2 this_position){
+
+  bool this_decision = false;
+  if(this_position.X() > X_Low() && this_position.X() < X_High() && this_position.Y() > Y_Low() && this_position.Y() < Y_High()) this_decision = true;
+
+  return this_decision;
+
+}
+
 FiducialVolume::~FiducialVolume(){
 
 }
