@@ -2,7 +2,7 @@
 
 void NueCCAnalyzer::initializeAnalyzer(){
 
-  cout << "[[NueCCAnalyzer::initializeAnalyzer]] Simulator : " << Simulator << endl;
+  cout << "[[NueCCAnalyzer::initializeAnalyzer]] IsData : " << IsData << endl;
   //debug_mode = true;
   debug_mode = false;
 

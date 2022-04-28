@@ -6,6 +6,7 @@ AnalyzerCore::AnalyzerCore(){
   NSkipEvent = 0;
   LogEvery = 1000;
   MCSample = "";
+  IsData = true;
   Userflags.clear();
   outfile = NULL;
 
@@ -64,8 +65,7 @@ void AnalyzerCore::Loop(){
   cout << "[AnalyzerCore::Loop] MaxEvent = " << MaxEvent << endl;
   cout << "[AnalyzerCore::Loop] NSkipEvent = " << NSkipEvent << endl;
   cout << "[AnalyzerCore::Loop] LogEvery = " << LogEvery << endl;
-  cout << "[SKFlatNtuple::Loop] MCSample = " << MCSample << endl;
-  cout << "[AnalyzerCore::Loop] Simulator = " << Simulator << endl;
+  cout << "[AnalyzerCore::Loop] IsData = " << IsData << endl; 
   cout << "[AnalyzerCore::Loop] Userflags = {" << endl;
   for(unsigned int i=0; i<Userflags.size(); i++){
     cout << "[AnalyzerCore::Loop]   \"" << Userflags.at(i) << "\"," << endl;
@@ -122,7 +122,7 @@ void AnalyzerCore::SetOutfilePath(TString outname){
 Event AnalyzerCore::GetEvent(){
 
   Event ev;
-  ev.SetSimulator(Simulator);
+  ev.SetIsData(IsData);
 
   return ev;
 

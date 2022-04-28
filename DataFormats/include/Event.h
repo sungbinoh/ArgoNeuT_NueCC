@@ -13,12 +13,11 @@ public:
   Event();
   ~Event();
 
-  void SetSimulator(TString sim);
-  inline TString Simulator() const {return j_Simulator;}
+  void SetIsData(bool isdata);
+  inline bool IsData() const {return j_IsData;}
 
 private:
-  TString j_Simulator;
-
+  bool j_IsData;
   ClassDef(Event,1)
 };
 

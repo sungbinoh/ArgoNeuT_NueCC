@@ -25,6 +25,7 @@ public:
   int LogEvery;
   TString MCSample;
   TString Simulator;
+  bool IsData;
   vector<TString> Userflags;
 
   bool debug_mode = false;

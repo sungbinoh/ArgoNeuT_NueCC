@@ -3,13 +3,13 @@
 ClassImp(Event)
 
 Event::Event(){
-  j_Simulator = "";
+  j_IsData = true;
 }
 
 Event::~Event(){
 
 }
 
-void Event::SetSimulator(TString sim){
-  j_Simulator = sim;
+void Event::SetIsData(bool isdata){
+  j_IsData = isdata;
 }
