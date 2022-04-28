@@ -25,7 +25,7 @@ export MYBIN=$ArNeuT_WD/bin/
 export PYTHONDIR=$ArNeuT_WD/python/
 export PATH=${MYBIN}:${PYTHONDIR}:${PATH}
 
-export ROOT_INCLUDE_PATH=$ROOT_INCLUDE_PATH:$ArNeuT_WD/AnalyzerTools/include/:$ArNeuT_WD/Analyzers/include/
+export ROOT_INCLUDE_PATH=$ROOT_INCLUDE_PATH:$ArNeuT_WD/DataFormats/include/:$ArNeuT_WD/AnalyzerTools/include/:$ArNeuT_WD/Analyzers/include/
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ArNeuT_LIB_PATH
 
 source $ArNeuT_WD/bin/BashColorSets.sh
