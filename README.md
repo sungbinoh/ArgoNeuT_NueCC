@@ -1,15 +1,20 @@
-B1;95;0c# ArgoNeuT_NueCC
+# ArgoNeuT_NueCC
 
 ## ArNeuT
 
 It should run well in linux, when PATH for the root is well defined.
 
-### Copy this repository
+
+### Complie
+
+Copy this repository
+
 ```
 git clone git@github.com:sungbinoh/ArgoNeuT_NueCC.git
 ```
 
-### Complie
+Complie
+
 ```
 source setup.sh
 make
