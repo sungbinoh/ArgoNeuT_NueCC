@@ -10,9 +10,9 @@
 #include "TRandom.h"
 
 #include "StandardRecoNtuple.h"
-#include "NewStandardRecoNtuple.h"
 #include "Event.h"
 #include "FiducialVolume.h"
+#include "MCCorrection.h"
 
 class AnalyzerCore {
 public:
@@ -21,7 +21,7 @@ public:
   ~AnalyzerCore();
 
   StandardRecoNtuple this_StandardRecoNtuple;
-  NewStandardRecoNtuple this_NewStandardRecoNtuple;
+  
 
   Long64_t MaxEvent, NSkipEvent;
   int LogEvery;
@@ -45,8 +45,9 @@ public:
   //==================
   virtual void SetTreeName(){
     TString tname = "";
-    if(WhichTree == "Default") tname = "analysistree/anatree";
-    if(WhichTree == "New") tname = "anatree";
+    //if(WhichTree == "Default") tname = "analysistree/anatree";
+    //if(WhichTree == "New") tname = "anatree";
+    tname = "anatree";
     fChain = new TChain(tname);
   }
 
@@ -84,7 +85,7 @@ public:
   //==================
   // Tools
   //==================
-
+  MCCorrection *mcCorr;
   Event GetEvent();
   void initializeAnalyzerTools();
 

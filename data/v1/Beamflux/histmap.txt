@@ -1,0 +1,5 @@
+#Type	Type	PID	Rootfile			Histname	Type
+Beam	SF	numu	beamweightanu_minerva.root	numu_wei	TH1D
+Beam	SF	anumu	beamweightanu_minerva.root	anumu_wei	TH1D
+Beam	SF	nue	beamweightanu_minerva.root	nue_wei		TH1D
+Beam	SF	anue	beamweightanu_minerva.root	anue_wei	TH1D

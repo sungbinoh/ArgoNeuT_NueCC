@@ -6,6 +6,9 @@ void NueCCAnalyzer::initializeAnalyzer(){
   //debug_mode = true;
   debug_mode = false;
 
+  //===========================
+  //== Define Fiducial Volumes
+  //===========================
   volume_index = 0;
   FV_TPC.SetFV(0., 47., -20., 20., 0., 90.);
   FV1.SetFV(3., 44., -16., 16., 6., 70.);
@@ -35,11 +38,26 @@ void NueCCAnalyzer::initializeAnalyzer(){
   cut_pNueCC = 0.99;
   cut_pNueCC2 = 0.99;
  
+  //===========================
+  // == Setup Event Variables
+  //===========================
+  data_pot = 1.25e20;
+  mc_pot = 1.111007228e+20;
+
 }
 
 void NueCCAnalyzer::executeEvent(){
   if(debug_mode) cout << "[[NueCCAnalyzer::executeEvent]] : START" << endl;
- 
+
+  //===================
+  //==== Event weight
+  //===================
+  double weight = 1.;
+  if(!IsData){
+    weight *= data_pot / mc_pot;
+    weight *= mcCorr->BeamFlux_SF(this_StandardRecoNtuple.nuPDG_truth, this_StandardRecoNtuple.enu_truth, 0);
+  }
+
   //=============
   //== Booleans
   //=============
@@ -82,20 +100,20 @@ void NueCCAnalyzer::executeEvent(){
   // 2 - nhits + antiminos;
   // 3 - nhits + antiminos + nearestz;
   // 4 - nhits + antiminos + nearestz + vertex;
-  FillHist("Cutflow", 0.5, 1., 6, 0., 6.);
-  FillHist("pNueCC", pNueCC, 1., 1000, 0., 1.);
+  FillHist("Cutflow", 0.5, weight, 6, 0., 6.);
+  FillHist("pNueCC", pNueCC, weight, 1000, 0., 1.);
   if(isPassNhits){
-    FillHist("Cutflow", 1.5, 1., 6, 0., 6.);
-    FillHist("pNueCC_nhits", pNueCC, 1., 1000, 0., 1.);
+    FillHist("Cutflow", 1.5, weight, 6, 0., 6.);
+    FillHist("pNueCC_nhits", pNueCC, weight, 1000, 0., 1.);
     if(isPassAntiMINOS){
-      FillHist("Cutflow", 2.5, 1., 6, 0., 6.);
-      FillHist("pNueCC_nhits_antiminos", pNueCC, 1., 1000, 0., 1.);
+      FillHist("Cutflow", 2.5, weight, 6, 0., 6.);
+      FillHist("pNueCC_nhits_antiminos", pNueCC, weight, 1000, 0., 1.);
       if(isPassNearestz){
-	FillHist("Cutflow", 3.5, 1., 6, 0., 6.);
-	FillHist("pNueCC_nhits_antiminos_nearestz", pNueCC, 1., 1000, 0., 1.);
+	FillHist("Cutflow", 3.5, weight, 6, 0., 6.);
+	FillHist("pNueCC_nhits_antiminos_nearestz", pNueCC, weight, 1000, 0., 1.);
 	if(isPassVertex){
 	  FillHist("Cutflow", 4.5, 1., 6, 0., 6.);
-	  FillHist("pNueCC_nhits_antiminos_nearestz_vertex", pNueCC, 1., 1000, 0., 1.);
+	  FillHist("pNueCC_nhits_antiminos_nearestz_vertex", pNueCC, weight, 1000, 0., 1.);
 	}
       }
     }

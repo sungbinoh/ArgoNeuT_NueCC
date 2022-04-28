@@ -6,5 +6,7 @@
 #pragma link C++ nestedclasses;
 
 #pragma link C++ class FiducialVolume+;
+#pragma link C++ class MCCorrection+;
+#pragma link C++ class TDirectoryHelper+;
 
 #endif

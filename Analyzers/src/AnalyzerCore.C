@@ -1,6 +1,5 @@
 #include "AnalyzerCore.h"
 #include "StandardRecoNtuple.h"
-#include "NewStandardRecoNtuple.h"
 
 AnalyzerCore::AnalyzerCore(){
   MaxEvent = -1;
@@ -11,7 +10,7 @@ AnalyzerCore::AnalyzerCore(){
   IsData = true;
   Userflags.clear();
   outfile = NULL;
-
+  mcCorr = new MCCorrection();
 }
 
 AnalyzerCore::~AnalyzerCore(){
@@ -39,8 +38,7 @@ AnalyzerCore::~AnalyzerCore(){
   delete outfile;
 
   //==== Tools
-
-
+  delete mcCorr;
   if (!fChain) return;
   delete fChain->GetCurrentFile();
   cout << "[AnalyzerCore::~AnalyzerCore] JOB FINISHED " << printcurrunttime() << endl;
@@ -136,13 +134,20 @@ Event AnalyzerCore::GetEvent(){
 //==================
 void AnalyzerCore::initializeAnalyzerTools(){
 
+  mcCorr->SetIsData(IsData);
+  if(!IsData){
+    mcCorr->ReadHistograms();
+  }
+
 }
 
 void AnalyzerCore::Init(){
 
   cout << "Let initiallize!" << endl;
-  if(WhichTree == "Default") this_StandardRecoNtuple.Init_StandardReco(fChain);
-  if(WhichTree == "New") this_NewStandardRecoNtuple.Init_NewStandardReco(fChain);
+  //if(WhichTree == "Default") this_StandardRecoNtuple.Init_StandardReco(fChain);
+  this_StandardRecoNtuple.IsData = IsData;
+  this_StandardRecoNtuple.Init_StandardReco(fChain); 
+
 }
 
 //==================

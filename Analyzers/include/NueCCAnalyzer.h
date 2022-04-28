@@ -24,6 +24,12 @@ public:
   double cut_pNueCC = 0.99;
   double cut_pNueCC2 = 0.99;
 
+  //=========================== 
+  //== Event Variables
+  //=========================== 
+  double data_pot;
+  double mc_pot;
+
   NueCCAnalyzer();
   ~NueCCAnalyzer();
 
