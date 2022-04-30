@@ -106,7 +106,8 @@ def write_table_to_file(table,filename):
     f.close()
 
 c1=TCanvas();
-flux,unc,covmx=read_flux_file('Nu_Flux_wandcsplinefix_numuFHC.txt')
+#flux,unc,covmx=read_flux_file('Nu_Flux_wandcsplinefix_numuFHC.txt')
+flux,unc,covmx=read_flux_file('numuFHC.txt')
 h=make_flux_histogram(flux,unc,"numu_fhc")
 h.Draw()
 

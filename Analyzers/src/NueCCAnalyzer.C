@@ -58,6 +58,16 @@ void NueCCAnalyzer::executeEvent(){
     weight *= mcCorr->BeamFlux_SF(this_StandardRecoNtuple.nuPDG_truth, this_StandardRecoNtuple.enu_truth, 0);
   }
 
+  TString suffix = "data";
+  if(!IsData){
+    vtr_vtx_position.clear();
+    vtr_which_interaction.clear();
+    
+
+    suffix = Get_suffix(this_StandardRecoNtuple.nuPDG_truth);
+  }
+    
+
   //=============
   //== Booleans
   //=============
@@ -119,6 +129,116 @@ void NueCCAnalyzer::executeEvent(){
     }
   }
 }
+
+TString NueCCAnalyzer::Get_suffix(int nu_PDG){
+
+  TString current_nu_str = "";
+  if(nu_PDG == 12) current_nu_str = "Nue";
+  else if(nu_PDG == -12) current_nu_str = "AntiNue";
+  else if(nu_PDG == 14) current_nu_str = "Numu";
+  else if(nu_PDG == -14) current_nu_str = "AntiNumu";
+  
+
+}
+
+void NueCCAnalyzer::Get_vtx_position_and_which_interaction(){
+
+  // == We want to identify interaction category of an event using truth level information
+
+  std::vector<TVector3> vtr_vtx_position;
+  std::vector<TString> vtr_str_interaction;
+  std::vector<int> vtr_int_interaction; // 0 : NumuCC, 1 : NueCC, 2 : NC
+  // == First of all, identify interaction category of each neutrino interactions in an event and save vertex position
+  int current_mcevts_truth = this_StandardRecoNtuple.mcevts_truth;
+  for(int n = 0; n < current_mcevts_truth; n++) {
+    if (current_mcevts_truth == 1) {
+      // == Save vertex position
+      TVector3 this_vtx(this_StandardRecoNtuple.nuvtxx_truth, this_StandardRecoNtuple.nuvtxy_truth, this_StandardRecoNtuple.nuvtxz_truth);
+      vtr_vtx_position.push_back(this_vtx);
+      
+      TString this_interaction = "";
+      int int_interaction = 2;      
+      // == Save which interaction
+      if (this_StandardRecoNtupleccnc_truth == 0) { // == charged current, CC
+	if (abs(this_StandardRecoNtuplenuPDG_truth) == 14) {
+	  this_interaction = "NumuCC";
+	  int_interaction = 0;
+	}
+	else if (abs(this_StandardRecoNtuplenuPDG_truth) == 12) {
+	  this_interaction = "NueCC";
+	  int_interaction = 1;
+	}
+      }
+      else { // == neutral current, NC
+	this_interaction = "NC";
+	int_interaction = 2;
+      }
+      vtr_str_interaction.push_back(this_interaction);
+      vtr_int_interaction.push_back(int_interaction);
+    }
+    
+    else{
+      // == Save vertex position
+      TVector3 this_vtx(this_StandardRecoNtuple.nuvtxx_truth, this_StandardRecoNtuple.nuvtxy_truth, this_StandardRecoNtuple.nuvtxz_truth);
+      vtr_vtx_position.push_back(this_vtx);
+
+      TString this_interaction = "";
+      int int_interaction = 2;
+      if ((*this_StandardRecoNtuple.nuvtxx_truth.ccnc_truth_multiple)[n] == 0) { // == charged current, CC
+	if (abs((*this_StandardRecoNtuple.nuPDG_truth_multiple)[n]) == 14) {
+	  this_interaction = "NumuCC";
+	  int_interaction = 0;
+	}
+	else if (abs((*this_StandardRecoNtuple.nuPDG_truth_multiple)[n]) == 12) {
+	  this_interaction = "NueCC";
+	  int_interaction = 1;
+	}
+      }
+      else { // == neutral current, NC
+	this_interaction = "NC";
+	int_interaction = 2;
+      }
+      vtr_str_interaction.push_back(this_interaction);
+      vtr_int_interaction.push_back(int_interaction);
+    }
+  }
+
+  // == Select the best vertex with priorities bellow when current_mcevts_truth < 4
+  // ==== 1. NueCC event
+  // ==== 2. Inside the TPC FV (FV_TPC)
+  // ==== 3. Closest to the center of ArgoNeuT (23.5, 0, 26)
+  // == For event with at least 4 current_mcevts_truth, set vtx position (-9999., -9999., -9999.) - abandon the event
+  TVector3 this_vtx_position (-9999., -9999., -9999.);
+  TString this_interaction = "";
+  if(current_mcevts_truth < 4){
+    int i_best_vtx = 0;
+    i_best_vtx = Select_best_vtx(vtr_vtx_position, vtr_int_interaction); 
+    best_vtx_position = vtr_vtx_position.at(i);
+    str_interaction = vtr_str_interaction.at(i);
+  }
+  best_vtx_position = this_vtx_position;
+  str_interaction = this_interaction;
+
+  vtr_vtx_position.clear();
+  vtr_str_interaction.clear();
+  vtr_int_interaction.clear();
+
+}
+
+int NueCCAnalyzer::Select_best_vtx(std::vector<TVector3> vtr_vtx, std::vector<TString> vtr_int_interaction){
+
+  int i_best_vtx = 0;
+  for(unsigned int i = 0; i < vtr_vtx.size(); i++){
+    
+  }
+
+}
+
+bool Is_Better_vtx(TVector3 vtx1, TString vtx1_interaction, TVector3 vtx2, TString vtx2_interaction){
+  
+
+}
+//double NueCCAnalyzer::
 
 NueCCAnalyzer::NueCCAnalyzer(){
 
