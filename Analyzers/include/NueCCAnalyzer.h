@@ -39,6 +39,8 @@ public:
   TString Get_suffix(int nu_PDG);
   void Get_vtx_position_and_which_interaction();
   int Select_best_vtx(std::vector<TVector3> vtr_vtx, std::vector<int> vtr_int_interaction);
+  bool Is_Better_vtx(TVector3 vtx1, int vtx1_interaction, TVector3 vtx2, int vtx2_interaction);
+  bool Is_closer_to_center(TVector3 vtx1, TVector3 vtx2);
 
   //==========================
   //== Additional variables

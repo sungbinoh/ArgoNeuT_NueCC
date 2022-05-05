@@ -48,26 +48,7 @@ void NueCCAnalyzer::initializeAnalyzer(){
 
 void NueCCAnalyzer::executeEvent(){
   if(debug_mode) cout << "[[NueCCAnalyzer::executeEvent]] : START" << endl;
-
-  //===================
-  //==== Event weight
-  //===================
-  double weight = 1.;
-  if(!IsData){
-    weight *= data_pot / mc_pot;
-    weight *= mcCorr->BeamFlux_SF(this_StandardRecoNtuple.nuPDG_truth, this_StandardRecoNtuple.enu_truth, 0);
-  }
-
-  TString suffix = "data";
-  if(!IsData){
-    vtr_vtx_position.clear();
-    vtr_which_interaction.clear();
     
-
-    suffix = Get_suffix(this_StandardRecoNtuple.nuPDG_truth);
-  }
-    
-
   //=============
   //== Booleans
   //=============
@@ -89,6 +70,7 @@ void NueCCAnalyzer::executeEvent(){
   bool isPassNearestz = (this_StandardRecoNtuple.nearestz[2] >= cut_nearestz);
 
   TVector3 vertex(this_StandardRecoNtuple.vtxx_reco, this_StandardRecoNtuple.vtxy_reco, this_StandardRecoNtuple.vtxz_reco);
+
   bool isPassVertex = FV_TPC.InFV(vertex);
 
   double pNueCC = this_StandardRecoNtuple.pNueCC;
@@ -101,6 +83,27 @@ void NueCCAnalyzer::executeEvent(){
   if (pNueCC2 == 1.) pNueCC2 = 1.0 - 1.0e-6;
   bool isPasspNueCC2 = (pNueCC2 >= cut_pNueCC2);
 
+  //===================
+  //==== Event weight
+  //===================
+  double weight = 1.;
+  if(!IsData){
+    weight *= data_pot / mc_pot;
+    weight *= mcCorr->BeamFlux_SF(this_StandardRecoNtuple.nuPDG_truth, this_StandardRecoNtuple.enu_truth, 0);
+  }
+
+  //===============================
+  //==== Set suffix for histograms
+  //===============================
+  TString suffix = "Data";
+  if(!IsData){
+    Get_vtx_position_and_which_interaction();
+    suffix = str_interaction;
+    // == External?
+    bool isInside = FV_TPC.InFV(best_vtx_position);
+    if(!isInside) suffix = "External_" + suffix;
+  }
+
   //=============
   //== Plot
   //=============
@@ -110,20 +113,20 @@ void NueCCAnalyzer::executeEvent(){
   // 2 - nhits + antiminos;
   // 3 - nhits + antiminos + nearestz;
   // 4 - nhits + antiminos + nearestz + vertex;
-  FillHist("Cutflow", 0.5, weight, 6, 0., 6.);
-  FillHist("pNueCC", pNueCC, weight, 1000, 0., 1.);
+  FillHist(suffix + "_Cutflow", 0.5, weight, 6, 0., 6.);
+  FillHist(suffix + "_pNueCC", pNueCC, weight, 1000, 0., 1.);
   if(isPassNhits){
-    FillHist("Cutflow", 1.5, weight, 6, 0., 6.);
-    FillHist("pNueCC_nhits", pNueCC, weight, 1000, 0., 1.);
+    FillHist(suffix + "_Cutflow", 1.5, weight, 6, 0., 6.);
+    FillHist(suffix + "_pNueCC_nhits", pNueCC, weight, 1000, 0., 1.);
     if(isPassAntiMINOS){
-      FillHist("Cutflow", 2.5, weight, 6, 0., 6.);
-      FillHist("pNueCC_nhits_antiminos", pNueCC, weight, 1000, 0., 1.);
+      FillHist(suffix + "_Cutflow", 2.5, weight, 6, 0., 6.);
+      FillHist(suffix + "_pNueCC_nhits_antiminos", pNueCC, weight, 1000, 0., 1.);
       if(isPassNearestz){
-	FillHist("Cutflow", 3.5, weight, 6, 0., 6.);
-	FillHist("pNueCC_nhits_antiminos_nearestz", pNueCC, weight, 1000, 0., 1.);
+	FillHist(suffix + "_Cutflow", 3.5, weight, 6, 0., 6.);
+	FillHist(suffix + "_pNueCC_nhits_antiminos_nearestz", pNueCC, weight, 1000, 0., 1.);
 	if(isPassVertex){
-	  FillHist("Cutflow", 4.5, 1., 6, 0., 6.);
-	  FillHist("pNueCC_nhits_antiminos_nearestz_vertex", pNueCC, weight, 1000, 0., 1.);
+	  FillHist(suffix + "_Cutflow", 4.5, 1., 6, 0., 6.);
+	  FillHist(suffix + "_pNueCC_nhits_antiminos_nearestz_vertex", pNueCC, weight, 1000, 0., 1.);
 	}
       }
     }
@@ -159,12 +162,12 @@ void NueCCAnalyzer::Get_vtx_position_and_which_interaction(){
       TString this_interaction = "";
       int int_interaction = 2;      
       // == Save which interaction
-      if (this_StandardRecoNtupleccnc_truth == 0) { // == charged current, CC
-	if (abs(this_StandardRecoNtuplenuPDG_truth) == 14) {
+      if (this_StandardRecoNtuple.ccnc_truth == 0) { // == charged current, CC
+	if (abs(this_StandardRecoNtuple.nuPDG_truth) == 14) {
 	  this_interaction = "NumuCC";
 	  int_interaction = 0;
 	}
-	else if (abs(this_StandardRecoNtuplenuPDG_truth) == 12) {
+	else if (abs(this_StandardRecoNtuple.nuPDG_truth) == 12) {
 	  this_interaction = "NueCC";
 	  int_interaction = 1;
 	}
@@ -184,7 +187,7 @@ void NueCCAnalyzer::Get_vtx_position_and_which_interaction(){
 
       TString this_interaction = "";
       int int_interaction = 2;
-      if ((*this_StandardRecoNtuple.nuvtxx_truth.ccnc_truth_multiple)[n] == 0) { // == charged current, CC
+      if ((*this_StandardRecoNtuple.ccnc_truth_multiple)[n] == 0) { // == charged current, CC
 	if (abs((*this_StandardRecoNtuple.nuPDG_truth_multiple)[n]) == 14) {
 	  this_interaction = "NumuCC";
 	  int_interaction = 0;
@@ -213,8 +216,8 @@ void NueCCAnalyzer::Get_vtx_position_and_which_interaction(){
   if(current_mcevts_truth < 4){
     int i_best_vtx = 0;
     i_best_vtx = Select_best_vtx(vtr_vtx_position, vtr_int_interaction); 
-    best_vtx_position = vtr_vtx_position.at(i);
-    str_interaction = vtr_str_interaction.at(i);
+    best_vtx_position = vtr_vtx_position.at(i_best_vtx);
+    str_interaction = vtr_str_interaction.at(i_best_vtx);
   }
   best_vtx_position = this_vtx_position;
   str_interaction = this_interaction;
@@ -225,20 +228,82 @@ void NueCCAnalyzer::Get_vtx_position_and_which_interaction(){
 
 }
 
-int NueCCAnalyzer::Select_best_vtx(std::vector<TVector3> vtr_vtx, std::vector<TString> vtr_int_interaction){
+int NueCCAnalyzer::Select_best_vtx(std::vector<TVector3> vtr_vtx, std::vector<int> vtr_int_interaction){
 
   int i_best_vtx = 0;
-  for(unsigned int i = 0; i < vtr_vtx.size(); i++){
-    
+
+  unsigned int N_vtr_vtx = vtr_vtx.size();
+  if(N_vtr_vtx <= 1) return 0;
+
+  for(unsigned int i = 0; i < vtr_vtx.size() - 1; i++){
+    bool current_decision = Is_Better_vtx(vtr_vtx.at(i), vtr_int_interaction.at(i), vtr_vtx.at(i + 1), vtr_int_interaction.at(i + 1));
+    if(!current_decision) i_best_vtx = i + 1;
   }
 
-}
-
-bool Is_Better_vtx(TVector3 vtx1, TString vtx1_interaction, TVector3 vtx2, TString vtx2_interaction){
+  return i_best_vtx;
   
-
 }
-//double NueCCAnalyzer::
+
+bool NueCCAnalyzer::Is_Better_vtx(TVector3 vtx1, int vtx1_interaction, TVector3 vtx2, int vtx2_interaction){
+  // == vtx 1 is better : return true, vtx 2 is better : return false
+  // == Select a better vertex
+  // ==== 1. NueCC event  (vtx_interaction == 1)
+  // ==== 2. Inside the TPC FV (FV_TPC)
+  // ==== 3. Closest to the center of ArgoNeuT (23.5, 0, 26)
+  bool this_decision = true;
+  // == assign false where vtx2 is better than vtx1
+  if(vtx1_interaction == 1){
+    if(vtx2_interaction == 1){
+      if(FV_TPC.InFV(vtx1)){
+	if(FV_TPC.InFV(vtx2)){
+	  this_decision = Is_closer_to_center(vtx1, vtx2);
+	}
+      }
+      else { // -- !FV_TPC.InFV(vtx1)
+	if(FV_TPC.InFV(vtx2)){
+	  this_decision = false;
+	}
+	else this_decision = Is_closer_to_center(vtx1, vtx2);
+      }
+    }
+    else{ // -- !vtx2_interaction == 1
+      if(!FV_TPC.InFV(vtx1)){
+	if(FV_TPC.InFV(vtx2)) this_decision = false;
+	else this_decision = Is_closer_to_center(vtx1, vtx2);
+      }
+    }
+  }
+  else{ // -- !vtx1_interaction == 1
+    if(vtx2_interaction == 1){
+      if(FV_TPC.InFV(vtx2)) this_decision = false;
+      else if(!FV_TPC.InFV(vtx1)) this_decision = Is_closer_to_center(vtx1, vtx2);
+    }
+    else{ // -- !vtx2_interaction == 1
+      if(FV_TPC.InFV(vtx1)){
+	if(FV_TPC.InFV(vtx2)) this_decision = Is_closer_to_center(vtx1, vtx2);
+      }
+      else{ // -- !FV_TPC.InFV(vtx1)
+	if(FV_TPC.InFV(vtx2)) this_decision = false;
+	else this_decision = Is_closer_to_center(vtx1, vtx2);
+      }
+    }
+  }
+
+  return this_decision;
+  
+}
+
+bool NueCCAnalyzer::Is_closer_to_center(TVector3 vtx1, TVector3 vtx2){
+  // == vtx 1 is closer to the center : return true, vtx 2 is closer to the center : return false
+  bool this_decision = true;
+  TVector3 center(23.5, 0., 26.);
+  double distance_1 = (vtx1 - center).Mag();
+  double distance_2 = (vtx2 - center).Mag();
+  if(distance_1 > distance_2) this_decision = false;
+
+  return this_decision;
+}
+
 
 NueCCAnalyzer::NueCCAnalyzer(){
 
