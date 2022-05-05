@@ -46,7 +46,7 @@ public:
   //== Additional variables
   //==========================
   TVector3 best_vtx_position;
-  TString str_interaction; 
+  TString str_interaction;
 
   NueCCAnalyzer();
   ~NueCCAnalyzer();

@@ -205,6 +205,12 @@ void NueCCAnalyzer::Get_vtx_position_and_which_interaction(){
       vtr_int_interaction.push_back(int_interaction);
     }
   }
+  
+  if(debug_mode){
+    for(int i = 0; i < vtr_str_interaction.size(); i++){
+      cout << "vtr_str_interaction.at(" << i << ") : " << vtr_str_interaction.at(i) << endl;
+    }
+  }
 
   // == Select the best vertex with priorities bellow when current_mcevts_truth < 4
   // ==== 1. NueCC event
@@ -212,15 +218,17 @@ void NueCCAnalyzer::Get_vtx_position_and_which_interaction(){
   // ==== 3. Closest to the center of ArgoNeuT (23.5, 0, 26)
   // == For event with at least 4 current_mcevts_truth, set vtx position (-9999., -9999., -9999.) - abandon the event
   TVector3 this_vtx_position (-9999., -9999., -9999.);
-  TString this_interaction = "";
+  TString this_interaction = "NC";
   if(current_mcevts_truth < 4){
     int i_best_vtx = 0;
     i_best_vtx = Select_best_vtx(vtr_vtx_position, vtr_int_interaction); 
     best_vtx_position = vtr_vtx_position.at(i_best_vtx);
     str_interaction = vtr_str_interaction.at(i_best_vtx);
   }
-  best_vtx_position = this_vtx_position;
-  str_interaction = this_interaction;
+  else{
+    best_vtx_position = this_vtx_position;
+    str_interaction = this_interaction;
+  }
 
   vtr_vtx_position.clear();
   vtr_str_interaction.clear();
