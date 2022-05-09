@@ -76,11 +76,11 @@ void NueCCAnalyzer::executeEvent(){
   double pNueCC = this_StandardRecoNtuple.pNueCC;
   double pNueCC2 = this_StandardRecoNtuple.pNueCC2;
   if (pNueCC == -9999) pNueCC = 1.0e-6;
-  if (pNueCC == 1.) pNueCC = 1.0 - 1.0e-6;
+  if (pNueCC >= 1.0 - 1.0e-6) pNueCC = 1.0 - 1.0e-6;
   bool isPasspNueCC = (pNueCC >= cut_pNueCC);
 
   if (pNueCC2 == -9999) pNueCC2 = 1.0e-6;
-  if (pNueCC2 == 1.) pNueCC2 = 1.0 - 1.0e-6;
+  if (pNueCC2 >= 1.0 - 1.0e-6) pNueCC2 = 1.0 - 1.0e-6;
   bool isPasspNueCC2 = (pNueCC2 >= cut_pNueCC2);
 
   //===================
