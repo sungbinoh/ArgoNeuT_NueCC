@@ -6,8 +6,8 @@ root -l -b<<EOF
   m.SetTreeName();
   m.LogEvery = 50000;
   m.MaxEvent = 100000;
-  if(m.IsData) m.AddFile("/gv0/Users/suoh/ArgoNeuT/data/new_standard_reco_hist.root");
-  if(!m.IsData) m.AddFile("/gv0/Users/suoh/ArgoNeuT/mc/new_standard_reco_hist.root");
+  if(m.IsData) m.AddFile("/dune/data/users/sungbino/ArgoNeuT/data/new_standard_reco_hist.root");
+  if(!m.IsData) m.AddFile("/dune/data/users/sungbino/ArgoNeuT/mc/new_standard_reco_hist.root");
   if(m.IsData) m.SetOutfilePath("./output/hists_data.root");
   if(!m.IsData) m.SetOutfilePath("./output/hists_mc.root");
   m.Init();
