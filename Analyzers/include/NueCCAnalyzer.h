@@ -16,6 +16,7 @@ public:
   FiducialVolume FV_TPC;
   FiducialVolume FV1;
   FiducialVolume FV2;
+  FiducialVolume FV3;
   FiducialVolume FV_vtx;
 
   //=========
@@ -23,7 +24,8 @@ public:
   //=========
   int volume_index;
   int cut_nhits = 50;
-  double cut_nearestz = 0.5;
+  double cut_nearestz_bellow = 0.5;
+  double cut_nearestz_upper = 90.;
   double cut_pNueCC = 0.99;
   double cut_pNueCC2 = 0.99;
 
@@ -47,6 +49,7 @@ public:
   //==========================
   TVector3 best_vtx_position;
   TString str_interaction;
+  int best_neutrino_number;
 
   NueCCAnalyzer();
   ~NueCCAnalyzer();

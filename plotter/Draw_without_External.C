@@ -3,7 +3,7 @@
 #include <sstream>
 
 using namespace std;
-bool draw_Data_vs_External = false;
+bool draw_Data_vs_External = true;
 
 void open_file_data(TString dir, TString histname){
 
@@ -146,6 +146,7 @@ void Draw_stacked_plot(TString histname, double xmin, double xmax, double rebin)
 
   // == Rebin, set color, stack, and add to legend MC histograms
   for(int i = 0; i < N_mc_strings; i++){
+    if(i == 2) continue;
     if(maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram]){
       if(debug) cout << "[Draw_stacked_plot] Draw_stacked_plot" +  mc_strings[i] + nameofhistogram << endl;
       maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram] -> Rebin(rebin);
@@ -155,6 +156,18 @@ void Draw_stacked_plot(TString histname, double xmin, double xmax, double rebin)
       maplegend[legend]->AddEntry(maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram], mc_strings[i], "f");
     }
   }
+
+  // == Add stat error bar
+  TH1D * mc_sum = (TH1D*)maphist["Draw_stacked_plot" + mc_strings[0] + nameofhistogram] -> Clone();
+  for(int i = 1; i < N_mc_strings; i++){
+    if(i != 2) mc_sum -> Add(maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram]);
+  }
+  mc_sum -> SetFillColor(kBlack);
+  mc_sum -> SetFillStyle(3013);
+  mc_sum -> SetMarkerSize(0);;
+  mc_sum -> SetLineWidth(0);
+  maplegend[legend]->AddEntry(mc_sum, "Stat. Uncert.", "f");
+
   // == Settings for data points
   data -> SetLineColor(kBlack);
   data -> SetMarkerColor(kBlack);
@@ -165,6 +178,7 @@ void Draw_stacked_plot(TString histname, double xmin, double xmax, double rebin)
 
   // == Draw
   maphstack[hstack] -> Draw("histsame");
+  mc_sum -> Draw("e2same");
   data -> Draw("epsame");
   maplegend[legend] -> Draw("same");
   gPad->RedrawAxis();
@@ -183,6 +197,7 @@ void Draw_stacked_plot(TString histname, double xmin, double xmax, double rebin)
   mappad[pad2] -> SetRightMargin( 0.03 );
   mappad[pad2] -> Draw();
   mappad[pad2] -> cd();
+  //mappad[pad2] -> SetLogy();
 
   TString name_x = histname;
 
@@ -195,45 +210,26 @@ void Draw_stacked_plot(TString histname, double xmin, double xmax, double rebin)
   pad2_template -> GetXaxis() -> SetTitle(name_x);
   pad2_template -> GetXaxis() -> SetTitleSize(0.15);
   pad2_template -> GetXaxis() -> SetLabelSize(0.125);
-  if(draw_Data_vs_External){
-    pad2_template -> GetYaxis() -> SetTitle("#frac{Obs. - non-Ext. MC}{External}");
-    pad2_template -> GetYaxis() -> SetTitleSize(0.10);
-  }
-  else{
-    pad2_template -> GetYaxis() -> SetTitle("#frac{Obs.}{Pred.}");
-    pad2_template -> GetYaxis() -> SetTitleSize(0.15);
-  }  
+  pad2_template -> GetYaxis() -> SetTitle("#frac{Obs.}{Pred.}");
+  pad2_template -> GetYaxis() -> SetTitleSize(0.15);
   pad2_template -> GetYaxis() -> SetTitleOffset(0.4);
   pad2_template -> GetYaxis() -> SetLabelSize(0.09);
   pad2_template -> GetYaxis() -> SetNdivisions(505);
-  pad2_template -> GetYaxis() -> SetRangeUser(0.1, 5.0);
+  //pad2_template -> GetYaxis() -> SetRangeUser(0.1, 100.); // == logy
+  pad2_template -> GetYaxis() -> SetRangeUser(0., 5.);
   pad2_template -> SetStats(0);
   pad2_template -> Draw("histsame");
 
   // == Make MC sum and data/mc shape
-  TH1D * mc_sum = (TH1D*)maphist["Draw_stacked_plot" + mc_strings[2] + nameofhistogram] -> Clone();
   TH1D * data_mc_ratio = (TH1D*)data -> Clone();
-
-  if(draw_Data_vs_External){
-    for(int i = 0; i < N_mc_strings; i++){
-      if(i != 2) data_mc_ratio -> Add(maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram], -1);
-    }
-    data_mc_ratio -> Divide(mc_sum);
-  }
-  else{
-    for(int i = 0; i < N_mc_strings; i++){
-      if(i != 2) mc_sum -> Add(maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram]);
-    }
-    data_mc_ratio -> Divide(mc_sum);
-  }
-
+  data_mc_ratio -> Divide(mc_sum);
+  
   data_mc_ratio -> Draw("psame");
 
   maplegend["bottom" + legend] = new TLegend(0.2, 0.85, 0.6, 0.95);
   maplegend["bottom" + legend]->SetBorderSize(0);
   maplegend["bottom" + legend]->SetNColumns(3);
-  if(draw_Data_vs_External) maplegend["bottom" + legend]->AddEntry(data_mc_ratio, "(Obs. - non-External MC)/External", "lp");
-  else maplegend["bottom" + legend]->AddEntry(data_mc_ratio, "Obs./Pred.", "lp");
+  maplegend["bottom" + legend]->AddEntry(data_mc_ratio, "Obs./Pred.", "lp");
 
   // == Line : ratio = 1
   TLine *pad2_line = new TLine(xmin, 1, xmax, 1);
@@ -264,10 +260,20 @@ void Draw_stacked_plot(TString histname, double xmin, double xmax, double rebin)
   ////////////////////////////////////
   TString pdfname;
   TString WORKING_DIR = getenv("ArNeuT_WD");
-  if(draw_Data_vs_External) pdfname = WORKING_DIR + "/output/plots/" + nameofhistogram + "_Data_vs_External.pdf";
-  else pdfname = WORKING_DIR + "/output/plots/" + nameofhistogram + ".pdf";
+  pdfname = WORKING_DIR + "/output/plots/" + nameofhistogram + "_no_External.pdf";
   mapcanvas[canvas] -> SaveAs(pdfname);
   
+}
+
+void submit_stack_plot_SRSB(TString histname, double xmin, double xmax, double rebin){
+
+  open_file_data("", histname + "_SR");
+  open_file_mc("", histname + "_SR");
+  Draw_stacked_plot(histname + "_SR", xmin, xmax, rebin);
+
+  open_file_data("", histname + "_SB");
+  open_file_mc("", histname + "_SB");
+  Draw_stacked_plot(histname + "_SB", xmin, xmax, rebin);
 }
 
 void submit_stack_plot(TString histname, double xmin, double xmax, double rebin){
@@ -278,17 +284,28 @@ void submit_stack_plot(TString histname, double xmin, double xmax, double rebin)
 
 }
 
-
-void Draw_basic_plots(){
+void Draw_without_External(){
   setTDRStyle();
 
   // == Draw_plot(histname, xmin, xmax, rebin)
+  submit_stack_plot_SRSB("pNueCC",-0.1, 1.1, 100.);
+  submit_stack_plot_SRSB("nearestz", 0., 90., 50.);
+  submit_stack_plot_SRSB("vtxx_reco", 0., 50., 50.);
+  submit_stack_plot_SRSB("vtxy_reco", -20., 20., 50.);
+  submit_stack_plot_SRSB("vtxz_reco", 0., 90., 50.);
+
+  submit_stack_plot("pNueCC",-0.1, 1.1, 100.);
+  submit_stack_plot("pNueCC_nhits",-0.1, 1.1, 100.);
+  submit_stack_plot("pNueCC_nhits_antiminos",-0.1, 1.1, 100.);
+  submit_stack_plot("pNueCC_nhits_antiminos_nearestz",-0.1, 1.1, 100.);
+  submit_stack_plot("nhits", 0., 500., 10.);
+
+  /*
   submit_stack_plot("Cutflow", 0., 6., 1.);
-  submit_stack_plot("pNueCC", 0., 1.0, 10.);
-  submit_stack_plot("pNueCC_nhits", 0., 1.0, 10.);
-  submit_stack_plot("pNueCC_nhits_antiminos",0., 1.0, 10.);
-  submit_stack_plot("pNueCC_nhits_antiminos_nearestz",0., 1.0, 10.);
-  //submit_stack_plot("pNueCC_nhits_antiminos_nearestz_vertex",0., 1.0, 50.);
-  submit_stack_plot("nhits", -10.,500., 10.);
-  
+  submit_stack_plot("pNueCC", 0., 1.0, 50.);
+  submit_stack_plot("pNueCC_nhits", 0., 1.0, 50.);
+  submit_stack_plot("pNueCC_nhits_antiminos",0., 1.0, 50.);
+  submit_stack_plot("pNueCC_nhits_antiminos_nearestz",0., 1.0, 50.);
+  submit_stack_plot("pNueCC_nhits_antiminos_nearestz_vertex",0., 1.0, 50.);
+  */
 }

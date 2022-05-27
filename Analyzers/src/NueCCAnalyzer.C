@@ -11,8 +11,10 @@ void NueCCAnalyzer::initializeAnalyzer(){
   //===========================
   volume_index = 0;
   FV_TPC.SetFV(0., 47., -20., 20., 0., 90.);
-  FV1.SetFV(3., 44., -16., 16., 6., 70.);
-  FV2.SetFV(0., 47., -20., 20., 2., 76.);
+  
+  FV1.SetFV(3., 44., -16., 16., 6., 70.); // == Volume for Minos veto
+  FV2.SetFV(5., 47., -15., 15., 10., 80.); // == Volume for Signal region
+  FV3.SetFV(5., 47., -20., 20., 10., 80.); // == Volume for Side-band region
   FV_vtx = FV_TPC;
   if(volume_index == 0){
     FV_vtx = FV_TPC;
@@ -28,12 +30,14 @@ void NueCCAnalyzer::initializeAnalyzer(){
   //== Cuts
   //=========
   cut_nhits = 50;
-  cut_nearestz = 0.5;
+  //cut_nearestz = 0.5; // == default cut by Wanwei
+  cut_nearestz_bellow = 10.;
+  cut_nearestz_upper = 80.;
   if (volume_index == 2) {
-    cut_nearestz = 1.;
+    cut_nearestz_bellow = 1.;
   }
   else if (volume_index == 1) {
-    cut_nearestz = 2.5;
+    cut_nearestz_bellow = 2.5;
   }
   cut_pNueCC = 0.99;
   cut_pNueCC2 = 0.99;
@@ -42,7 +46,7 @@ void NueCCAnalyzer::initializeAnalyzer(){
   // == Setup Event Variables
   //===========================
   data_pot = 1.25e20;
-  mc_pot = 1.111007228e+20;
+  mc_pot = 7.207630764e+19;
 
 }
 
@@ -67,11 +71,14 @@ void NueCCAnalyzer::executeEvent(){
     if (!isPassAntiMINOS) break;
   }
 
-  bool isPassNearestz = (this_StandardRecoNtuple.nearestz[2] >= cut_nearestz);
+  //bool isPassNearestz = (this_StandardRecoNtuple.nearestz[2] >= cut_nearestz);
+  bool isPassNearestz = (this_StandardRecoNtuple.nearestz[2] >= cut_nearestz_bellow) && (this_StandardRecoNtuple.nearestz[2] <= cut_nearestz_upper);
 
   TVector3 vertex(this_StandardRecoNtuple.vtxx_reco, this_StandardRecoNtuple.vtxy_reco, this_StandardRecoNtuple.vtxz_reco);
 
-  bool isPassVertex = FV_TPC.InFV(vertex);
+  bool isPassVertex_TPC = FV_TPC.InFV(vertex);
+  bool isPassVertex_FV2 = FV2.InFV(vertex);
+  bool isPassVertex_FV3 = FV3.InFV(vertex);
 
   double pNueCC = this_StandardRecoNtuple.pNueCC;
   double pNueCC2 = this_StandardRecoNtuple.pNueCC2;
@@ -82,15 +89,6 @@ void NueCCAnalyzer::executeEvent(){
   if (pNueCC2 == -9999) pNueCC2 = 1.0e-6;
   if (pNueCC2 >= 1.0 - 1.0e-6) pNueCC2 = 1.0 - 1.0e-6;
   bool isPasspNueCC2 = (pNueCC2 >= cut_pNueCC2);
-
-  //===================
-  //==== Event weight
-  //===================
-  double weight = 1.;
-  if(!IsData){
-    weight *= data_pot / mc_pot;
-    weight *= mcCorr->BeamFlux_SF(this_StandardRecoNtuple.nuPDG_truth, this_StandardRecoNtuple.enu_truth, 0);
-  }
 
   //===============================
   //==== Set suffix for histograms
@@ -104,9 +102,35 @@ void NueCCAnalyzer::executeEvent(){
     if(!isInside) suffix = "External_" + suffix;
   }
 
+  //===================
+  //==== Event weight
+  //===================
+  double weight = 1.;
+  if(!IsData){
+    weight *= data_pot / mc_pot;
+    //weight *= mcCorr->BeamFlux_SF(this_StandardRecoNtuple.nuPDG_truth, this_StandardRecoNtuple.enu_truth, 0);
+    weight *= mcCorr->BeamFlux_SF((*this_StandardRecoNtuple.nuPDG_truth_multiple)[best_neutrino_number], (*this_StandardRecoNtuple.enu_truth_multiple)[best_neutrino_number], 0);
+  }
+
   //=============
   //== Plot
   //=============
+
+  // == Check correlation between variables
+  FillHist("pNueCC_vs_Nhits", pNueCC, this_StandardRecoNtuple.no_hits, 1., 100, 0., 1., 100, 0., 100.);
+  FillHist("pNueCC_vs_nearest", pNueCC, this_StandardRecoNtuple.nearestz[2], 1., 100, 0., 1., 100, 0., 10.);
+  FillHist("pNueCC_vs_vtxx_reco", pNueCC, this_StandardRecoNtuple.vtxx_reco, 1., 100, 0., 1., 50, 0., 50);
+  FillHist("pNueCC_vs_vtxy_reco", pNueCC, this_StandardRecoNtuple.vtxy_reco, 1., 100, 0., 1., 50, -20., 20);
+  FillHist("pNueCC_vs_vtxz_reco", pNueCC, this_StandardRecoNtuple.vtxz_reco, 1., 100, 0., 1., 90, 0., 90);
+
+  // == Plots for MC truth shapes
+  double distance_vtx_truth = -9999.;
+  if(!IsData){
+    // == The center of ArgoNeuT (23.5, 0, 26)
+    TVector3 center(23.5, 0., 26.);
+    distance_vtx_truth = (best_vtx_position - center).Mag();
+  }
+
   // event index:
   // 0 - total:
   // 1 - nhits;
@@ -115,6 +139,8 @@ void NueCCAnalyzer::executeEvent(){
   // 4 - nhits + antiminos + nearestz + vertex;
   FillHist(suffix + "_Cutflow", 0.5, weight, 6, 0., 6.);
   FillHist(suffix + "_pNueCC", pNueCC, weight, 1000, 0., 1.);
+  FillHist(suffix + "_nhits", this_StandardRecoNtuple.no_hits, weight, 500, 0., 500.);
+
   if(isPassNhits){
     FillHist(suffix + "_Cutflow", 1.5, weight, 6, 0., 6.);
     FillHist(suffix + "_pNueCC_nhits", pNueCC, weight, 1000, 0., 1.);
@@ -124,9 +150,30 @@ void NueCCAnalyzer::executeEvent(){
       if(isPassNearestz){
 	FillHist(suffix + "_Cutflow", 3.5, weight, 6, 0., 6.);
 	FillHist(suffix + "_pNueCC_nhits_antiminos_nearestz", pNueCC, weight, 1000, 0., 1.);
-	if(isPassVertex){
-	  FillHist(suffix + "_Cutflow", 4.5, 1., 6, 0., 6.);
-	  FillHist(suffix + "_pNueCC_nhits_antiminos_nearestz_vertex", pNueCC, weight, 1000, 0., 1.);
+	if(isPassVertex_TPC){
+	  FillHist(suffix + "_distance_vtx_truth", distance_vtx_truth, weight, 3000, 0., 3000);
+	  FillHist(suffix + "_vtxx_reco_vs_distance_vtx_truth", this_StandardRecoNtuple.vtxx_reco, distance_vtx_truth, weight, 50, 0., 50., 1000, 0., 3000.);
+	  FillHist(suffix + "_vtxy_reco_vs_distance_vtx_truth", this_StandardRecoNtuple.vtxy_reco, distance_vtx_truth, weight, 40, -20., 20., 1000, 0., 3000.);
+          FillHist(suffix + "_vtxz_reco_vs_distance_vtx_truth", this_StandardRecoNtuple.vtxz_reco, distance_vtx_truth, weight, 90, 0., 90., 1000, 0., 3000.);
+
+	  if(isPassVertex_FV2){// == Signal region
+	    FillHist(suffix + "_Cutflow", 4.5, 1., 6, 0., 6.);
+	    FillHist(suffix + "_pNueCC_SR", pNueCC, weight, 1000, 0., 1.);
+	    FillHist(suffix + "_nearestz_SR", this_StandardRecoNtuple.nearestz[2], weight, 900, 0., 90.);
+	    FillHist(suffix + "_vtxx_reco_SR", this_StandardRecoNtuple.vtxx_reco, weight, 500, 0., 50.);
+	    FillHist(suffix + "_vtxy_reco_SR", this_StandardRecoNtuple.vtxy_reco, weight, 400, -20., 20.);
+	    FillHist(suffix + "_vtxz_reco_SR", this_StandardRecoNtuple.vtxz_reco, weight, 900, 0., 90.);
+	  }
+	  // == Plots for ABCD method
+	  else if(isPassVertex_FV3) { // == Sideband region
+	    FillHist(suffix + "_Cutflow", 4.5, 1., 6, 0., 6.);
+            FillHist(suffix + "_pNueCC_SB", pNueCC, weight, 1000, 0., 1.);
+            FillHist(suffix + "_nearestz_SB", this_StandardRecoNtuple.nearestz[2], weight, 900, 0., 90.);
+            FillHist(suffix + "_vtxx_reco_SB", this_StandardRecoNtuple.vtxx_reco, weight, 500, 0., 50.);
+            FillHist(suffix + "_vtxy_reco_SB", this_StandardRecoNtuple.vtxy_reco, weight, 400, -20., 20.);
+            FillHist(suffix + "_vtxz_reco_SB", this_StandardRecoNtuple.vtxz_reco, weight, 900, 0., 90.);
+	  }
+	  
 	}
       }
     }
@@ -182,7 +229,7 @@ void NueCCAnalyzer::Get_vtx_position_and_which_interaction(){
     
     else{
       // == Save vertex position
-      TVector3 this_vtx(this_StandardRecoNtuple.nuvtxx_truth, this_StandardRecoNtuple.nuvtxy_truth, this_StandardRecoNtuple.nuvtxz_truth);
+      TVector3 this_vtx((*this_StandardRecoNtuple.nuvtxx_truth_multiple)[n], (*this_StandardRecoNtuple.nuvtxy_truth_multiple)[n], (*this_StandardRecoNtuple.nuvtxz_truth_multiple)[n]);
       vtr_vtx_position.push_back(this_vtx);
 
       TString this_interaction = "";
@@ -219,6 +266,7 @@ void NueCCAnalyzer::Get_vtx_position_and_which_interaction(){
   // == For event with at least 4 current_mcevts_truth, set vtx position (-9999., -9999., -9999.) - abandon the event
   TVector3 this_vtx_position (-9999., -9999., -9999.);
   TString this_interaction = "NC";
+  /*
   if(current_mcevts_truth < 4){
     int i_best_vtx = 0;
     i_best_vtx = Select_best_vtx(vtr_vtx_position, vtr_int_interaction); 
@@ -229,6 +277,12 @@ void NueCCAnalyzer::Get_vtx_position_and_which_interaction(){
     best_vtx_position = this_vtx_position;
     str_interaction = this_interaction;
   }
+  */
+  int i_best_vtx = 0;
+  i_best_vtx = Select_best_vtx(vtr_vtx_position, vtr_int_interaction);
+  best_vtx_position = vtr_vtx_position.at(i_best_vtx);
+  str_interaction = vtr_str_interaction.at(i_best_vtx);
+  best_neutrino_number = i_best_vtx;
 
   vtr_vtx_position.clear();
   vtr_str_interaction.clear();
