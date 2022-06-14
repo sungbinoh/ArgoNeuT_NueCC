@@ -122,13 +122,24 @@ void NueCCAnalyzer::executeEvent(){
     ext_reweight_1view = 1.;
     ext_reweight_2view = 1.;
     if(suffix.Contains("External")){
+      // == p0, p1 in [0.7, 0.9]
+      /*
       double p0_1view = 6.216;
       double p1_1view = -4.754;
       double p0_2view = 10.366;
       double p1_2view = -7.668;
+      */
+      // == p0, p1 in [0.4, 0.9]
+      double p0_1view = 3.895;
+      double p1_1view = -1.928;
+      double p0_2view = 7.171;
+      double p1_2view = -3.840;
+
       // ==  Default ext_reweight values are 1.0
       ext_reweight_1view = p0_1view + p1_1view * pNueCC;
       ext_reweight_2view = p0_2view + p1_2view * pNueCC2;
+
+      //cout << "SB debug, pNueCC : " << pNueCC << ", pNueCC2 : " << pNueCC2 << ", ext_reweight_1view : " << ext_reweight_1view << ", ext_reweight_2view : " << ext_reweight_2view << endl;
     }
 
     weight *= pot_weight;
@@ -158,12 +169,12 @@ void NueCCAnalyzer::executeEvent(){
       TString syst_Down =this_syst_str +"_Down";
       double weight_Up =  (*this_StandardRecoNtuple.evtwgt_weight)[i][0];
       double weight_Down =  (*this_StandardRecoNtuple.evtwgt_weight)[i][1];
-      /*
+
       Plot("OneView_" + suffix + "_" + syst_Up, weight * ext_reweight_1view * weight_Up );
       Plot("OneView_" + suffix + "_" + syst_Down, weight * ext_reweight_1view * weight_Down );
       Plot("TwoView_" + suffix + "_" + syst_Up, weight * ext_reweight_2view * weight_Up );
       Plot("TwoView_" + suffix + "_" + syst_Down, weight * ext_reweight_2view * weight_Down );
-      */
+
     } 
 
     // == External Background syst
@@ -202,8 +213,8 @@ void NueCCAnalyzer::Plot(TString suffix, double weight){
 	  JSFillHist(suffix, "Cutflow_" + suffix, 4.5, weight, 10, 0., 10.);
 	  if(pNueCC > 0.994) JSFillHist(suffix, "Cutflow_" + suffix, 5.5, weight, 10, 0., 10.);
 	  if(pNueCC2 > 0.994) JSFillHist(suffix, "Cutflow_" + suffix, 6.5, weight, 10, 0., 10.);
-	  JSFillHist(suffix, "pNueCC_vtx_" + suffix, pNueCC, weight, 100, 0., 1.);
-	  JSFillHist(suffix, "pNueCC2_vtx_" + suffix, pNueCC2, weight, 100, 0., 1.);
+	  JSFillHist(suffix, "pNueCC_vtx_" + suffix, pNueCC, weight, 1000, 0., 1.);
+	  JSFillHist(suffix, "pNueCC2_vtx_" + suffix, pNueCC2, weight, 1000, 0., 1.);
 	}
       }
     }

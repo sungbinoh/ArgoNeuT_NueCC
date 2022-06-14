@@ -3,7 +3,7 @@
 #include <sstream>
 
 using namespace std;
-bool draw_Data_vs_External = true;
+bool draw_Data_vs_External = false;
 
 void open_file_data(TString dir, TString histname){
 
@@ -34,7 +34,8 @@ void open_file_data(TString dir, TString histname){
 void open_file_mc(TString which_view, TString dir, TString histname){
 
   TString input_file_dir = getenv("ArNeuT_WD");
-  TString root_file_path =input_file_dir + "/output/hists_mc.root";
+  //TString root_file_path =input_file_dir + "/output/hists_mc.root";
+  TString root_file_path =input_file_dir + "/output/hists_mc_fit_0p7to0p9.root";
   TFile *current_file = new TFile ((root_file_path)) ;
 
   for(int i = 0; i < N_MC; i++){
@@ -85,7 +86,7 @@ void Draw_stacked_plot(TString which_view, TString histname, double xmin, double
   mappad[pad1] -> SetRightMargin( 0.03 );
   mappad[pad1] -> Draw();
   mappad[pad1] -> cd();
-  mappad[pad1] -> SetLogy();
+  //mappad[pad1] -> SetLogy();
 
   // == Define histograms into maps
   cout << histname + "_Data_central" << endl;
@@ -115,7 +116,8 @@ void Draw_stacked_plot(TString which_view, TString histname, double xmin, double
   pad1_template -> GetYaxis() -> SetTitleSize(0.07);
   pad1_template -> GetYaxis() -> SetTitleOffset(1.02);
   pad1_template -> GetYaxis() -> SetTitle("Events");
-  pad1_template -> GetYaxis() -> SetRangeUser(1., data_max * 100.);
+  //pad1_template -> GetYaxis() -> SetRangeUser(1., data_max * 100.); // == logy
+  pad1_template -> GetYaxis() -> SetRangeUser(0., 150.); // == pNueCC [0.9, 1.0]
   pad1_template -> Draw("hist");
 
   // == Define legend
@@ -195,7 +197,7 @@ void Draw_stacked_plot(TString which_view, TString histname, double xmin, double
   pad2_template -> GetYaxis() -> SetTitleOffset(0.4);
   pad2_template -> GetYaxis() -> SetLabelSize(0.09);
   pad2_template -> GetYaxis() -> SetNdivisions(505);
-  pad2_template -> GetYaxis() -> SetRangeUser(0.0, 7.0);
+  pad2_template -> GetYaxis() -> SetRangeUser(0.0, 2.0);
   pad2_template -> SetStats(0);
   pad2_template -> Draw("histsame");
 
@@ -279,8 +281,12 @@ void Draw_basic_plots(){
   setTDRStyle();
 
   // == Draw_plot(histname, xmin, xmax, rebin)
-  submit_stack_plot("Cutflow", 0., 10., 1.);
-  submit_stack_plot("pNueCC_vtx", 0., 1.0, 2.);
+  //submit_stack_plot("Cutflow", 0., 10., 1.);
+  //submit_stack_plot("pNueCC_vtx", 0., 1.0, 50.);
+  //submit_stack_plot("pNueCC2_vtx", 0., 1.0, 50.);
+  //submit_stack_plot("pNueCC_vtx", 0.9, 1.0, 10.);
+  //submit_stack_plot("pNueCC2_vtx", 0.9, 1.0, 10.);
+
 
   /*
   submit_stack_plot("pNueCC", 0., 1.0, 10.);
