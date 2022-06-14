@@ -5,9 +5,10 @@ root -l -b<<EOF
   m.IsData = false;
   m.SetTreeName();
   m.LogEvery = 50000;
-  //m.MaxEvent = 100000;
+  //m.MaxEvent = 1000;
   if(m.IsData) m.AddFile("/pnfs/argoneut/persistent/users/sungbino/cvn/data/new_standard_reco_hist.root");
-  if(!m.IsData) m.AddFile("/pnfs/argoneut/persistent/users/sungbino/cvn/mc/new_standard_reco_hist.root");
+  if(!m.IsData) m.AddFile("/pnfs/argoneut/persistent/users/sungbino/cvn/mc/new_standard_reco_hist_v2.root");
+  //if(!m.IsData) m.AddFile("/pnfs/argoneut/persistent/users/sungbino/cvn/mc/new_standard_reco_hist.root");
   if(m.IsData) m.SetOutfilePath("./output/hists_data.root");
   if(!m.IsData) m.SetOutfilePath("./output/hists_mc.root");
   m.Init();

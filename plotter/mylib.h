@@ -30,6 +30,9 @@ map<TString, std::vector<double> > map_syst_table;
 
 #define data_pot = 1.25e20;
 
+const int N_MC = 6;
+TString MC_category[N_MC] = {"NC", "NumuCC", "External_NC", "External_NueCC", "External_NumuCC", "NueCC"};
+
 const int N_smear_bit = 8;
 TString smear_flags[N_smear_bit] = {"NONE", "P", "Theta", "P_Theta", "Phi", "P_Phi", "Phi_Theta", "All"};
 

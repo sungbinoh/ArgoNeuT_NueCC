@@ -3,17 +3,17 @@
 #include <sstream>
 
 using namespace std;
-bool draw_Data_vs_External = false;
+bool draw_Data_vs_External = true;
 
 void open_file_data(TString dir, TString histname){
 
   TString input_file_dir = getenv("ArNeuT_WD");
   TString root_file_path =input_file_dir + "/output/hists_data.root";
   TFile *current_file = new TFile ((root_file_path)) ;
-  //gDirectory->cd(dir);
+  gDirectory->cd(dir);
 
-  //TH1D * current_hist = (TH1D*)gDirectory -> Get(histname + "_" + dir);
-  TH1D * current_hist = (TH1D*)gDirectory -> Get("Data_" + histname);
+  TH1D * current_hist = (TH1D*)gDirectory -> Get(histname + "_" + dir);
+  //TH1D * current_hist = (TH1D*)gDirectory -> Get("Data_" + histname);
   if(current_hist){
     current_hist -> SetDirectory(0);
     if(debug) cout << "[open_file_data] We have " +  histname << endl;
@@ -24,49 +24,40 @@ void open_file_data(TString dir, TString histname){
   TH1::AddDirectory(kFALSE);
   
   //maphist[histname + "_" + dir] = current_hist;
-  maphist["Data" + histname] = current_hist;
+  cout << histname + "_"+ dir << endl;
+  maphist[histname + "_" + dir] = current_hist;
 
   current_file -> Close();
   delete current_file;
 }
 
-void open_file_mc(TString dir, TString histname){
+void open_file_mc(TString which_view, TString dir, TString histname){
 
   TString input_file_dir = getenv("ArNeuT_WD");
   TString root_file_path =input_file_dir + "/output/hists_mc.root";
   TFile *current_file = new TFile ((root_file_path)) ;
 
-  TH1D * External_NC = (TH1D*)gDirectory -> Get("External_NC_" + histname);
-  TH1D * External_NueCC = (TH1D*)gDirectory -> Get("External_NueCC_" + histname);
-  TH1D * External_NumuCC = (TH1D*)gDirectory -> Get("External_NumuCC_" + histname);
-  TH1D * NC = (TH1D*)gDirectory -> Get("NC_" + histname);
-  TH1D * NueCC = (TH1D*)gDirectory -> Get("NueCC_" + histname);
-  TH1D * NumuCC = (TH1D*)gDirectory -> Get("NumuCC_" + histname);
-
-  if(External_NC) External_NC -> SetDirectory(0);
-  if(External_NueCC) External_NueCC -> SetDirectory(0);
-  if(External_NumuCC) External_NumuCC -> SetDirectory(0);
-  if(NC) NC -> SetDirectory(0);
-  if(NueCC) NueCC -> SetDirectory(0);
-  if(NumuCC) NumuCC -> SetDirectory(0);
-  TH1::AddDirectory(kFALSE);
-
-  maphist["External_NC" +  histname] = External_NC;
-  maphist["External_NueCC" +  histname] = External_NueCC;
-  maphist["External_NumuCC" +  histname] = External_NumuCC;
-  maphist["NC" +  histname] = NC;
-  maphist["NueCC" +  histname] = NueCC;
-  maphist["NumuCC" +  histname] = NumuCC;
+  for(int i = 0; i < N_MC; i++){
+    TString this_dir_str = which_view+ "_" + MC_category[i] + "_" + dir;
+    TString this_hist_str = histname + "_" + which_view + "_" + MC_category[i] + "_" +dir;
+    gDirectory->cd(this_dir_str);
+    TH1D* this_hist = (TH1D*)gDirectory -> Get(this_hist_str);
+    if(this_hist) this_hist -> SetDirectory(0);
+    TH1::AddDirectory(kFALSE);
+    maphist[this_hist_str] = this_hist;
+    cout << "[open_file_mc] this_hist_str : " << this_hist_str << endl;
+    gDirectory->cd("../");
+  }
 
   current_file -> Close();
   delete current_file;
 }
 
-void Draw_stacked_plot(TString histname, double xmin, double xmax, double rebin){
+void Draw_stacked_plot(TString which_view, TString histname, double xmin, double xmax, double rebin){
 
   TString title_y = "Events/bin";
   //TString nameofhistogram = histname + "_" + dir;
-  TString nameofhistogram = histname;
+  TString nameofhistogram = histname + "_" + which_view;
   TString canvas = nameofhistogram;
   TString pad1 = nameofhistogram;
   TString pad2 = nameofhistogram;
@@ -96,18 +87,17 @@ void Draw_stacked_plot(TString histname, double xmin, double xmax, double rebin)
   mappad[pad1] -> cd();
   mappad[pad1] -> SetLogy();
 
-
   // == Define histograms into maps
-  TH1D * data =  (TH1D*)maphist["Data" + histname] -> Clone();
+  cout << histname + "_Data_central" << endl;
+  TH1D * data =  (TH1D*)maphist[histname + "_Data_central"] -> Clone();
 
-  const int N_mc_strings = 4;
-  TString mc_strings[N_mc_strings] = {"NC", "NumuCC", "External", "NueCC"};
+  const int N_mc_strings = 6;
+  TString mc_strings[N_mc_strings] = {"NC", "NumuCC", "External_NC", "External_NueCC", "External_NumuCC", "NueCC"};
   for(int i = 0; i < N_mc_strings; i++){
-    if(i != 2) maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram] = (TH1D*)maphist[mc_strings[i] + nameofhistogram] -> Clone();
+    TString this_hist_name = nameofhistogram + "_" + mc_strings[i] + "_central";
+    cout << "[Draw_stacked_plot] this_hist_name : " << this_hist_name << endl;
+    maphist["Draw_stacked_plot" + which_view + mc_strings[i] + nameofhistogram] = (TH1D*)maphist[this_hist_name] -> Clone();
   }
-  maphist["Draw_stacked_plotExternal" + nameofhistogram] = (TH1D*)maphist["External_NC" + nameofhistogram] -> Clone();
-  maphist["Draw_stacked_plotExternal" + nameofhistogram] -> Add(maphist["External_NueCC"+ nameofhistogram]);
-  maphist["Draw_stacked_plotExternal" + nameofhistogram] -> Add(maphist["External_NumuCC"+ nameofhistogram]);
 
   // == Rebin data and get y-maximum value
   data -> Rebin(rebin);
@@ -139,20 +129,19 @@ void Draw_stacked_plot(TString histname, double xmin, double xmax, double rebin)
 
   // == Define HStack and MC histgram colors
   maphstack[hstack] = new THStack(hstack, "Stacked_" + nameofhistogram);
-  //Int_t colour_array[] = {867, 901, 416, 393};
-  //Int_t colour_array[] = {867, 393, 416, 901};
-  Int_t colour_array[] = {867, 393, 416, 632};
-
+  //Int_t colour_array[] = {867, 393, 632, 416, 414, 420};
+  Int_t colour_array[] = {867, 393, 420, 416, 414, 632};
 
   // == Rebin, set color, stack, and add to legend MC histograms
   for(int i = 0; i < N_mc_strings; i++){
-    if(maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram]){
+    TString this_hist_name = "Draw_stacked_plot" + which_view + mc_strings[i] + nameofhistogram;
+    if(maphist[this_hist_name]){
       if(debug) cout << "[Draw_stacked_plot] Draw_stacked_plot" +  mc_strings[i] + nameofhistogram << endl;
-      maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram] -> Rebin(rebin);
-      maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram] -> SetLineColor(colour_array[i]);
-      maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram] -> SetFillColor(colour_array[i]);
-      maphstack[hstack] -> Add(maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram]);
-      maplegend[legend]->AddEntry(maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram], mc_strings[i], "f");
+      maphist[this_hist_name] -> Rebin(rebin);
+      maphist[this_hist_name] -> SetLineColor(colour_array[i]);
+      maphist[this_hist_name] -> SetFillColor(colour_array[i]);
+      maphstack[hstack] -> Add(maphist[this_hist_name]);
+      maplegend[legend]->AddEntry(maphist[this_hist_name], mc_strings[i], "f");
     }
   }
   // == Settings for data points
@@ -206,23 +195,27 @@ void Draw_stacked_plot(TString histname, double xmin, double xmax, double rebin)
   pad2_template -> GetYaxis() -> SetTitleOffset(0.4);
   pad2_template -> GetYaxis() -> SetLabelSize(0.09);
   pad2_template -> GetYaxis() -> SetNdivisions(505);
-  pad2_template -> GetYaxis() -> SetRangeUser(0.1, 5.0);
+  pad2_template -> GetYaxis() -> SetRangeUser(0.0, 7.0);
   pad2_template -> SetStats(0);
   pad2_template -> Draw("histsame");
 
   // == Make MC sum and data/mc shape
-  TH1D * mc_sum = (TH1D*)maphist["Draw_stacked_plot" + mc_strings[2] + nameofhistogram] -> Clone();
+  TH1D * mc_sum = (TH1D*)maphist["Draw_stacked_plot" + which_view + mc_strings[4] + nameofhistogram] -> Clone();
   TH1D * data_mc_ratio = (TH1D*)data -> Clone();
 
   if(draw_Data_vs_External){
     for(int i = 0; i < N_mc_strings; i++){
-      if(i != 2) data_mc_ratio -> Add(maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram], -1);
+      TString this_hist_name = "Draw_stacked_plot" + which_view + mc_strings[i] + nameofhistogram;
+      if(!mc_strings[i].Contains("External")) data_mc_ratio -> Add(maphist[this_hist_name], -1);
     }
+    mc_sum -> Add(maphist["Draw_stacked_plot" + which_view + mc_strings[2] + nameofhistogram]);
+    mc_sum -> Add(maphist["Draw_stacked_plot" + which_view + mc_strings[3] + nameofhistogram]);
     data_mc_ratio -> Divide(mc_sum);
   }
   else{
     for(int i = 0; i < N_mc_strings; i++){
-      if(i != 2) mc_sum -> Add(maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram]);
+      TString this_hist_name = "Draw_stacked_plot" + which_view + mc_strings[i] + nameofhistogram;
+      if(i != 4) mc_sum -> Add(maphist[this_hist_name]);
     }
     data_mc_ratio -> Divide(mc_sum);
   }
@@ -272,9 +265,12 @@ void Draw_stacked_plot(TString histname, double xmin, double xmax, double rebin)
 
 void submit_stack_plot(TString histname, double xmin, double xmax, double rebin){
 
-  open_file_data("", histname);
-  open_file_mc("", histname);
-  Draw_stacked_plot(histname, xmin, xmax, rebin);
+  open_file_data("Data_central", histname);
+  open_file_mc("OneView", "central", histname);
+  open_file_mc("TwoView", "central", histname);
+
+  Draw_stacked_plot("OneView", histname, xmin, xmax, rebin);
+  Draw_stacked_plot("TwoView", histname, xmin, xmax, rebin);
 
 }
 
@@ -283,12 +279,14 @@ void Draw_basic_plots(){
   setTDRStyle();
 
   // == Draw_plot(histname, xmin, xmax, rebin)
-  submit_stack_plot("Cutflow", 0., 6., 1.);
+  submit_stack_plot("Cutflow", 0., 10., 1.);
+  submit_stack_plot("pNueCC_vtx", 0., 1.0, 2.);
+
+  /*
   submit_stack_plot("pNueCC", 0., 1.0, 10.);
   submit_stack_plot("pNueCC_nhits", 0., 1.0, 10.);
   submit_stack_plot("pNueCC_nhits_antiminos",0., 1.0, 10.);
   submit_stack_plot("pNueCC_nhits_antiminos_nearestz",0., 1.0, 10.);
-  //submit_stack_plot("pNueCC_nhits_antiminos_nearestz_vertex",0., 1.0, 50.);
   submit_stack_plot("nhits", -10.,500., 10.);
-  
+  */
 }

@@ -9,6 +9,7 @@ public:
 
   void initializeAnalyzer();
   void executeEvent();
+  void Plot(TString suffix, double weight);
 
   //=====================
   //== Fiducial Volumes
@@ -22,18 +23,28 @@ public:
   //=========
   //== Cuts
   //=========
+  bool label_energy_deposition = false;
+  bool label_Wanwei = false;
   int volume_index;
   int cut_nhits = 50;
   double cut_nearestz_bellow = 0.5;
   double cut_nearestz_upper = 90.;
   double cut_pNueCC = 0.99;
   double cut_pNueCC2 = 0.99;
+  double pNueCC  = 0;
+  double pNueCC2 = 0;
+  bool isPassNhits = false;
+  bool isPassAntiMINOS = true;
+  bool isPassNearestz = false;
+  bool isPassVertex = false;
 
   //=========================== 
   //== Event Variables
   //=========================== 
   double data_pot;
   double mc_pot;
+  double ext_reweight_1view = 1.;
+  double ext_reweight_2view = 1.;
 
   //==========================
   //== Additional functions

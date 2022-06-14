@@ -61,6 +61,8 @@ void open_file_mc(TString dir, TString histname){
   delete current_file;
 }
 
+
+
 void Draw_stacked_plot(TString histname, double xmin, double xmax, double rebin){
 
   TString title_y = "Events/bin";
@@ -93,7 +95,7 @@ void Draw_stacked_plot(TString histname, double xmin, double xmax, double rebin)
   mappad[pad1] -> SetRightMargin( 0.03 );
   mappad[pad1] -> Draw();
   mappad[pad1] -> cd();
-  mappad[pad1] -> SetLogy();
+  //mappad[pad1] -> SetLogy();
 
 
   // == Define histograms into maps
@@ -106,7 +108,8 @@ void Draw_stacked_plot(TString histname, double xmin, double xmax, double rebin)
 
 
   for(int i = 0; i < N_mc_strings; i++){
-    maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram] = (TH1D*)maphist[mc_strings[i] + nameofhistogram] -> Clone();
+    TString current_histname = "Draw_stacked_plot" + mc_strings[i] + nameofhistogram;
+    if(maphist[mc_strings[i] + nameofhistogram]) maphist[current_histname] = (TH1D*)maphist[mc_strings[i] + nameofhistogram] -> Clone();
   }
 
   // == Rebin data and get y-maximum value
@@ -125,7 +128,8 @@ void Draw_stacked_plot(TString histname, double xmin, double xmax, double rebin)
   pad1_template -> GetYaxis() -> SetTitleSize(0.07);
   pad1_template -> GetYaxis() -> SetTitleOffset(1.02);
   pad1_template -> GetYaxis() -> SetTitle("Events");
-  pad1_template -> GetYaxis() -> SetRangeUser(1., data_max * 100.);
+  //pad1_template -> GetYaxis() -> SetRangeUser(1., data_max * 100.); // == logy
+  pad1_template -> GetYaxis() -> SetRangeUser(1., data_max * 2.0);
   pad1_template -> Draw("hist");
 
   // == Define legend
@@ -159,7 +163,7 @@ void Draw_stacked_plot(TString histname, double xmin, double xmax, double rebin)
   // == mc sum
   TH1D * mc_sum = (TH1D*)maphist["Draw_stacked_plot" + mc_strings[0] + nameofhistogram] -> Clone();
   for(int i = 1; i < N_mc_strings; i++){
-    mc_sum -> Add(maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram]);
+    if(maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram])mc_sum -> Add(maphist["Draw_stacked_plot" + mc_strings[i] + nameofhistogram]);
   }
   mc_sum -> SetFillColor(kBlack);
   mc_sum -> SetFillStyle(3013);
@@ -213,7 +217,7 @@ void Draw_stacked_plot(TString histname, double xmin, double xmax, double rebin)
   pad2_template -> GetYaxis() -> SetTitleOffset(0.4);
   pad2_template -> GetYaxis() -> SetLabelSize(0.09);
   pad2_template -> GetYaxis() -> SetNdivisions(505);
-  pad2_template -> GetYaxis() -> SetRangeUser(0.1, 5.0);
+  pad2_template -> GetYaxis() -> SetRangeUser(0.5, 2.5);
   pad2_template -> SetStats(0);
   pad2_template -> Draw("histsame");
 
@@ -283,6 +287,14 @@ void Draw_basic_plots_external_subcategory(){
   submit_stack_plot("pNueCC_nhits_antiminos",0., 1.0, 100.);
   submit_stack_plot("pNueCC_nhits_antiminos_nearestz",0., 1.0, 100.);
   //submit_stack_plot("pNueCC_nhits_antiminos_nearestz_vertex",0., 1.0, 50.);
-  submit_stack_plot("nhits", -10.,500., 10.);
-  
+  submit_stack_plot("nhits_SR1", -10.,500., 100.);
+  submit_stack_plot("nearestz_SR1", 0., 90., 225.);
+  submit_stack_plot("vtxx_reco_SR1", 0., 50., 100.);
+  submit_stack_plot("vtxy_reco_SR1", -20., 20., 100.);
+  submit_stack_plot("vtxz_reco_SR1", 0., 90., 225.);
+  submit_stack_plot("nhits_SR2", -10.,500., 100.);
+  submit_stack_plot("nearestz_SR2", 0., 90., 300.);
+  submit_stack_plot("vtxx_reco_SR2", 0., 50., 250.);
+  submit_stack_plot("vtxy_reco_SR2", -20., 20., 200.);
+  submit_stack_plot("vtxz_reco_SR2", 0., 90., 300.);
 }
