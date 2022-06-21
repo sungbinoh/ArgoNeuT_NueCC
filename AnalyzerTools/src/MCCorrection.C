@@ -42,10 +42,12 @@ void MCCorrection::ReadHistograms(){
     }
   }
 
-  cout << "[MCCorrection::MCCorrection] map_hist_BeamFlux :" << endl;
+  cout << "[MCCorrection::ReadHistograms] map_hist_BeamFlux :" << endl;
   for(std::map< TString, TH1D* >::iterator it = map_hist_BeamFlux.begin(); it != map_hist_BeamFlux.end(); it++){
-    cout << "[MCCorrection::MCCorrection] key = " << it -> first << endl;
+    cout << "[MCCorrection::ReadHistograms] key = " << it -> first << endl;
   }
+
+  cout << "[MCCorrection::ReadHistograms] END" << endl;
 }
 
 MCCorrection::~MCCorrection(){

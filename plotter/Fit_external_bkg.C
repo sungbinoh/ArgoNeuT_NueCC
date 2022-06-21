@@ -3,7 +3,7 @@
 #include <sstream>
 
 using namespace std;
-bool draw_Data_vs_External = false;
+bool draw_Data_vs_External = true;
 
 void open_file_data(TString dir, TString histname){
 
@@ -34,10 +34,7 @@ void open_file_data(TString dir, TString histname){
 void open_file_mc(TString which_view, TString dir, TString histname){
 
   TString input_file_dir = getenv("ArNeuT_WD");
-  //TString root_file_path =input_file_dir + "/output/hists_mc.root";
-  TString root_file_path =input_file_dir + "/output/hists_mc_fit_0p7to0p9_beamflux.root";
-  //TString root_file_path =input_file_dir + "/output/hists_mc_fit_0p7to0p9.root";
-  
+  TString root_file_path =input_file_dir + "/output/hists_mc.root";
   TFile *current_file = new TFile ((root_file_path)) ;
 
   for(int i = 0; i < N_MC; i++){
@@ -81,7 +78,7 @@ void Draw_stacked_plot(TString which_view, TString histname, double xmin, double
   ////////////////////////////////////
   // == Pad 1
   ////////////////////////////////////
-  mappad[pad1] = new TPad("", "", 0, 0.25, 1, 1);
+  mappad[pad1] = new TPad("", "", 0, 0.40, 1, 1);
   mappad[pad1] -> SetTopMargin( 0.07 );
   mappad[pad1] -> SetBottomMargin( 0.05 );
   mappad[pad1] -> SetLeftMargin( 0.15 );
@@ -97,7 +94,7 @@ void Draw_stacked_plot(TString which_view, TString histname, double xmin, double
   const int N_mc_strings = 6;
   TString mc_strings[N_mc_strings] = {"NC", "NumuCC", "External_NC", "External_NueCC", "External_NumuCC", "NueCC"};
   for(int i = 0; i < N_mc_strings; i++){
-    TString this_hist_name = nameofhistogram + "_" + mc_strings[i] + "_central";
+    TString this_hist_name = nameofhistogram + "_" + mc_strings[i] + "_central_NoExtReweight";
     cout << "[Draw_stacked_plot] this_hist_name : " << this_hist_name << endl;
     maphist["Draw_stacked_plot" + which_view + mc_strings[i] + nameofhistogram] = (TH1D*)maphist[this_hist_name] -> Clone();
   }
@@ -118,8 +115,7 @@ void Draw_stacked_plot(TString which_view, TString histname, double xmin, double
   pad1_template -> GetYaxis() -> SetTitleSize(0.07);
   pad1_template -> GetYaxis() -> SetTitleOffset(1.02);
   pad1_template -> GetYaxis() -> SetTitle("Events");
-  pad1_template -> GetYaxis() -> SetRangeUser(1., data_max * 100.); // == logy
-  //pad1_template -> GetYaxis() -> SetRangeUser(0., 150.); // == pNueCC [0.9, 1.0]
+  pad1_template -> GetYaxis() -> SetRangeUser(1., data_max * 100.);
   pad1_template -> Draw("hist");
 
   // == Define legend
@@ -169,9 +165,9 @@ void Draw_stacked_plot(TString which_view, TString histname, double xmin, double
   ////////////////////////////////////
   if(debug) cout << "[Draw_stacked_plot] Starting Pad 2" << endl;
   mapcanvas[canvas] -> cd();
-  mappad[pad2] = new TPad(pad2, "", 0, 0, 1, 0.25);
+  mappad[pad2] = new TPad(pad2, "", 0, 0, 1, 0.40);
   mappad[pad2] -> SetTopMargin( 0.05 );
-  mappad[pad2] -> SetBottomMargin( 0.4 );
+  mappad[pad2] -> SetBottomMargin( 0.2 );
   mappad[pad2] -> SetLeftMargin( 0.15 );
   mappad[pad2] -> SetRightMargin( 0.03 );
   mappad[pad2] -> Draw();
@@ -186,20 +182,21 @@ void Draw_stacked_plot(TString which_view, TString histname, double xmin, double
   pad2_template -> SetTitle("");
   pad2_template -> SetLineColor(kWhite);
   pad2_template -> GetXaxis() -> SetTitle(name_x);
-  pad2_template -> GetXaxis() -> SetTitleSize(0.15);
-  pad2_template -> GetXaxis() -> SetLabelSize(0.125);
+  pad2_template -> GetXaxis() -> SetTitleSize(0.08);
+  pad2_template -> GetXaxis() -> SetLabelSize(0.08);
   if(draw_Data_vs_External){
+    pad2_template -> GetYaxis() -> SetTitleSize(0.07);
+    pad2_template -> GetYaxis() -> SetTitleOffset(0.7);
     pad2_template -> GetYaxis() -> SetTitle("#frac{Obs. - non-Ext. MC}{External}");
-    pad2_template -> GetYaxis() -> SetTitleSize(0.10);
   }
   else{
     pad2_template -> GetYaxis() -> SetTitle("#frac{Obs.}{Pred.}");
-    pad2_template -> GetYaxis() -> SetTitleSize(0.15);
+    pad2_template -> GetYaxis() -> SetTitleSize(0.07);
   }  
-  pad2_template -> GetYaxis() -> SetTitleOffset(0.4);
-  pad2_template -> GetYaxis() -> SetLabelSize(0.09);
+  pad2_template -> GetYaxis() -> SetLabelSize(0.07);
   pad2_template -> GetYaxis() -> SetNdivisions(505);
-  pad2_template -> GetYaxis() -> SetRangeUser(0.0, 2.0);
+  pad2_template -> GetYaxis() -> SetRangeUser(0.0, 7.0);
+  if(which_view == "TwoView") pad2_template -> GetYaxis() -> SetRangeUser(0.0, 19.0);
   pad2_template -> SetStats(0);
   pad2_template -> Draw("histsame");
 
@@ -225,6 +222,24 @@ void Draw_stacked_plot(TString which_view, TString histname, double xmin, double
   }
 
   data_mc_ratio -> Draw("psame");
+
+  TF1 *fit0 = new TF1("fit0","pol1", 0.4, 0.9);
+  fit0 -> SetLineWidth(3);
+  data_mc_ratio -> Fit(fit0, "R", "", 0.4, 0.9);
+
+  TPaveText *pt_0 = new TPaveText(0.70,0.70,0.9,0.93,"NDC");
+  pt_0 -> SetFillColor(kWhite);
+  pt_0 -> AddText("Fitting : y = ax + b"); ((TText*)pt_0->GetListOfLines()->Last())->SetTextColor(kRed);
+  pt_0 -> AddText(Form("a = %4.3f pm %4.3f", fit0->GetParameter(1), fit0->GetParError(1))); ((TText*)pt_0->GetListOfLines()->Last())->SetTextColor(kRed);
+  pt_0 -> AddText(Form("b = %4.3f pm %4.3f", fit0->GetParameter(0), fit0->GetParError(0))); ((TText*)pt_0->GetListOfLines()->Last())->SetTextColor(kRed);
+  pt_0 -> Draw("same");
+
+  TF1 *fit0_extend = new TF1("fit0_extend", "pol1", 0., 1.);
+  fit0_extend -> SetParameter(0, fit0->GetParameter(0));
+  fit0_extend -> SetParameter(1, fit0->GetParameter(1));
+  fit0_extend -> SetLineStyle(7);
+  fit0_extend -> SetLineColor(kRed);
+  fit0_extend -> Draw("same");
 
   maplegend["bottom" + legend] = new TLegend(0.2, 0.85, 0.6, 0.95);
   maplegend["bottom" + legend]->SetBorderSize(0);
@@ -261,8 +276,8 @@ void Draw_stacked_plot(TString which_view, TString histname, double xmin, double
   ////////////////////////////////////
   TString pdfname;
   TString WORKING_DIR = getenv("ArNeuT_WD");
-  if(draw_Data_vs_External) pdfname = WORKING_DIR + "/output/plots/" + nameofhistogram + "_Data_vs_External.pdf";
-  else pdfname = WORKING_DIR + "/output/plots/" + nameofhistogram + ".pdf";
+  if(draw_Data_vs_External) pdfname = WORKING_DIR + "/output/plots/" + nameofhistogram + "_Data_vs_External_fit.pdf";
+  else pdfname = WORKING_DIR + "/output/plots/" + nameofhistogram + "_fit.pdf";
   mapcanvas[canvas] -> SaveAs(pdfname);
   
 }
@@ -270,8 +285,8 @@ void Draw_stacked_plot(TString which_view, TString histname, double xmin, double
 void submit_stack_plot(TString histname, double xmin, double xmax, double rebin){
 
   open_file_data("Data_central", histname);
-  open_file_mc("OneView", "central", histname);
-  open_file_mc("TwoView", "central", histname);
+  open_file_mc("OneView", "central_NoExtReweight", histname);
+  open_file_mc("TwoView", "central_NoExtReweight", histname);
 
   Draw_stacked_plot("OneView", histname, xmin, xmax, rebin);
   Draw_stacked_plot("TwoView", histname, xmin, xmax, rebin);
@@ -279,16 +294,13 @@ void submit_stack_plot(TString histname, double xmin, double xmax, double rebin)
 }
 
 
-void Draw_basic_plots(){
+void Fit_external_bkg(){
   setTDRStyle();
 
   // == Draw_plot(histname, xmin, xmax, rebin)
   //submit_stack_plot("Cutflow", 0., 10., 1.);
-  //submit_stack_plot("pNueCC_vtx", 0., 1.0, 50.);
-  //submit_stack_plot("pNueCC2_vtx", 0., 1.0, 50.);
-  //submit_stack_plot("pNueCC_vtx", 0.9, 1.0, 10.);
-  submit_stack_plot("pNueCC2_vtx", 0.9, 1.0, 10.);
-
+  submit_stack_plot("pNueCC_vtx", 0., 1.0, 20.);
+  submit_stack_plot("pNueCC2_vtx", 0., 1.0, 20.);
 
   /*
   submit_stack_plot("pNueCC", 0., 1.0, 10.);

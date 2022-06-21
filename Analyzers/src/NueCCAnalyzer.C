@@ -113,11 +113,19 @@ void NueCCAnalyzer::executeEvent(){
   //==== Event weight
   //===================
   double weight = 1.;
+  double beamflux_weight = 1.;
+  double beamflux_weight_Up = 1.;
+  double beamflux_weight_Down = 1.;
+  double pot_weight = 1.;
   if(!IsData){
-    double pot_weight = data_pot / mc_pot;
+    pot_weight = data_pot / mc_pot;
     //double beamflux_weight = mcCorr->BeamFlux_SF((*this_StandardRecoNtuple.nuPDG_truth_multiple)[best_neutrino_number], (*this_StandardRecoNtuple.enu_truth_multiple)[best_neutrino_number], 0);
-    double beamflux_weight = mcCorr->BeamFlux_SF(this_StandardRecoNtuple.nuPDG_truth, this_StandardRecoNtuple.enu_truth, 0);
-    
+    beamflux_weight = mcCorr->BeamFlux_SF(this_StandardRecoNtuple.nuPDG_truth, this_StandardRecoNtuple.enu_truth, 0);
+    beamflux_weight_Up = mcCorr->BeamFlux_SF(this_StandardRecoNtuple.nuPDG_truth, this_StandardRecoNtuple.enu_truth, 1);
+    beamflux_weight_Down = mcCorr->BeamFlux_SF(this_StandardRecoNtuple.nuPDG_truth, this_StandardRecoNtuple.enu_truth, -1);
+
+    //cout << "beamflux_weight : " << beamflux_weight << ", beamflux_weight_Up : " << beamflux_weight_Up << ", beamflux_weight_Down : " << beamflux_weight_Down << endl;
+
     // == External background scaling
     ext_reweight_1view = 1.;
     ext_reweight_2view = 1.;
@@ -142,11 +150,10 @@ void NueCCAnalyzer::executeEvent(){
       //cout << "SB debug, pNueCC : " << pNueCC << ", pNueCC2 : " << pNueCC2 << ", ext_reweight_1view : " << ext_reweight_1view << ", ext_reweight_2view : " << ext_reweight_2view << endl;
     }
 
-    weight *= pot_weight;
-    weight *= beamflux_weight;
     //cout << "[Run:Event] = [" << this_StandardRecoNtuple.run << ":" << this_StandardRecoNtuple.event << "] pot_weight : " << pot_weight << ", beamflux_weight  : " << beamflux_weight << ", weight : " << weight << ", suffix : " << suffix << endl;
     //cout << "best_neutrino_number : "  << best_neutrino_number << ", multiple 0 PDG = " << (*this_StandardRecoNtuple.nuPDG_truth_multiple)[0] << ", multiple 0 enu" << (*this_StandardRecoNtuple.enu_truth_multiple)[0] << ", nuPDG_truth = " << this_StandardRecoNtuple.nuPDG_truth << ", enu_truth = " <<  this_StandardRecoNtuple.enu_truth << endl;
   }
+  weight *= pot_weight;
 
   if(IsData){
     Plot(suffix + "_central", 1.);
@@ -154,10 +161,12 @@ void NueCCAnalyzer::executeEvent(){
   else{
 
     // == Central MC
-    Plot("OneView_" + suffix + "_central", weight * ext_reweight_1view);
-    Plot("TwoView_" + suffix + "_central", weight * ext_reweight_2view);
-    Plot("OneView_" + suffix + "_central_NoExtReweight", weight);
-    Plot("TwoView_" + suffix + "_central_NoExtReweight", weight);
+    //cout << "pNueCC : " << pNueCC << ", weight : " << pot_weight << ", 1view weight : " << weight * ext_reweight_1view * beamflux_weight << endl;
+    //cout << "pNueCC2 : " << pNueCC2 << ", weight : " << pot_weight << ", 1view weight : " << weight * ext_reweight_2view * beamflux_weight << endl;
+    Plot("OneView_" + suffix + "_central", weight * ext_reweight_1view * beamflux_weight);
+    Plot("TwoView_" + suffix + "_central", weight * ext_reweight_2view * beamflux_weight);
+    Plot("OneView_" + suffix + "_central_NoExtReweight", weight * beamflux_weight);
+    Plot("TwoView_" + suffix + "_central_NoExtReweight", weight * beamflux_weight);
 
     // == For loop for GENIE parameter uncertainties
     unsigned int size_evtwgt_weight = (*this_StandardRecoNtuple.evtwgt_weight).size();
@@ -170,12 +179,29 @@ void NueCCAnalyzer::executeEvent(){
       double weight_Up =  (*this_StandardRecoNtuple.evtwgt_weight)[i][0];
       double weight_Down =  (*this_StandardRecoNtuple.evtwgt_weight)[i][1];
 
-      Plot("OneView_" + suffix + "_" + syst_Up, weight * ext_reweight_1view * weight_Up );
-      Plot("OneView_" + suffix + "_" + syst_Down, weight * ext_reweight_1view * weight_Down );
-      Plot("TwoView_" + suffix + "_" + syst_Up, weight * ext_reweight_2view * weight_Up );
-      Plot("TwoView_" + suffix + "_" + syst_Down, weight * ext_reweight_2view * weight_Down );
+      if(isnan(weight_Up)) weight_Up = 1.;
+      if(isnan(weight_Down)) weight_Down = 1.;
+
+      
+      if(this_syst_str.Contains("MaCOHpi") || this_syst_str.Contains("R0COHpi") ){
+	if(isnan(weight_Up) | isnan(weight_Down)){
+	  cout << "[run:event] = [" << this_StandardRecoNtuple.run << ", " << this_StandardRecoNtuple.event << "] this_syst_str : " << this_syst_str << ", Up : " << weight_Up << ", Down : " << weight_Down << endl;
+	  
+	}
+      }
+
+      Plot("OneView_" + suffix + "_" + syst_Up, weight * ext_reweight_1view * beamflux_weight * weight_Up );
+      Plot("OneView_" + suffix + "_" + syst_Down, weight * ext_reweight_1view * beamflux_weight * weight_Down );
+      Plot("TwoView_" + suffix + "_" + syst_Up, weight * ext_reweight_2view * beamflux_weight * weight_Up );
+      Plot("TwoView_" + suffix + "_" + syst_Down, weight * ext_reweight_2view * beamflux_weight * weight_Down );
 
     } 
+
+    // == Beam flux reweight
+    Plot("OneView_" + suffix + "_beamflux_Up", weight * ext_reweight_1view * beamflux_weight_Up);
+    Plot("OneView_" + suffix + "_beamflux_Down", weight * ext_reweight_1view * beamflux_weight_Down);
+    Plot("TwoView_" + suffix + "_beamflux_Up", weight * ext_reweight_2view * beamflux_weight_Up);
+    Plot("TwoView_" + suffix + "_beamflux_Down", weight * ext_reweight_2view * beamflux_weight_Down);
 
     // == External Background syst
     // == NONE. Just Normalization error for now...
@@ -194,7 +220,7 @@ void NueCCAnalyzer::Plot(TString suffix, double weight){
   // 2 - nhits + antiminos;
   // 3 - nhits + antiminos + nearestz;
   // 4 - nhits + antiminos + nearestz + vertex;
-  // 5 - nnhits + antiminos + nearestz + vertex + pNuecc > 0.994
+  // 5 - nnhits + antiminos + nearestz + vertex + pNuecc > 0.994 / pNuecc2 > 0.991
   JSFillHist(suffix, "Cutflow_" + suffix, 0.5, weight, 10, 0., 10.);
   JSFillHist(suffix, "pNueCC_" + suffix, pNueCC, weight, 1000, 0., 1.);
   JSFillHist(suffix, "pNueCC2_" + suffix, pNueCC2, weight, 1000, 0., 1.);
@@ -212,7 +238,7 @@ void NueCCAnalyzer::Plot(TString suffix, double weight){
 	if(isPassVertex){
 	  JSFillHist(suffix, "Cutflow_" + suffix, 4.5, weight, 10, 0., 10.);
 	  if(pNueCC > 0.994) JSFillHist(suffix, "Cutflow_" + suffix, 5.5, weight, 10, 0., 10.);
-	  if(pNueCC2 > 0.994) JSFillHist(suffix, "Cutflow_" + suffix, 6.5, weight, 10, 0., 10.);
+	  if(pNueCC2 > 0.991) JSFillHist(suffix, "Cutflow_" + suffix, 6.5, weight, 10, 0., 10.);
 	  JSFillHist(suffix, "pNueCC_vtx_" + suffix, pNueCC, weight, 1000, 0., 1.);
 	  JSFillHist(suffix, "pNueCC2_vtx_" + suffix, pNueCC2, weight, 1000, 0., 1.);
 	}

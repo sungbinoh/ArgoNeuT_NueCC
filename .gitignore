@@ -6,5 +6,6 @@
 lib/*.tar.gz
 */obj
 *.png
+*.pdf
 *.root
 *~

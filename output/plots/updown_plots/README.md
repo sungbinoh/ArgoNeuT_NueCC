@@ -1,0 +1,1 @@
+Direcotry for systematic up/down template plots

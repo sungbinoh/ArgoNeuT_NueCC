@@ -11,7 +11,6 @@ bool blind_SR = false;
 TString Simulator;
 // == Call all needed maps
 map<TString, TH1D*> maphist;
-map<TString, TH1F*> mapTH1F;
 map<TString, TH2D*> maphist2D;
 map<TString, TGraph*> map_gr;
 map<TString, TGraphAsymmErrors*> map_asym_gr;
@@ -31,8 +30,60 @@ map<TString, std::vector<double> > map_syst_table;
 
 #define data_pot = 1.25e20;
 
-const int N_MC = 6;
-TString MC_category[N_MC] = {"NC", "NumuCC", "External_NC", "External_NueCC", "External_NumuCC", "NueCC"};
+const int N_syst = 29;
+TString systematics[N_syst] = {"central",
+			       "genie_FormZone_Genie_Down", "genie_FormZone_Genie_Up",
+			       "genie_FrAbs_pi_Genie_Down", "genie_FrAbs_pi_Genie_Up",
+			       "genie_MaCCQE_Genie_Down", "genie_MaCCQE_Genie_Up",
+			       "genie_MaCCRES_Genie_Down", "genie_MaCCRES_Genie_Up",
+			       "genie_MaCOHpi_Genie_Down", "genie_MaCOHpi_Genie_Up",
+			       "genie_MaNCEL_Genie_Down", "genie_MaNCEL_Genie_Up",
+			       "genie_MaNCRES_Genie_Down", "genie_MaNCRES_Genie_Up",
+			       "genie_MvCCRES_Genie_Down", "genie_MvCCRES_Genie_Up",
+			       "genie_MvNCRES_Genie_Down", "genie_MvNCRES_Genie_Up", 
+			       "genie_NonRESBGvbarpCC1pi_Genie_Down", "genie_NonRESBGvbarpCC1pi_Genie_Up",
+			       "genie_NonRESBGvbarpCC2pi_Genie_Down", "genie_NonRESBGvbarpCC2pi_Genie_Up",
+			       "genie_NonRESBGvbarpNC1pi_Genie_Down", "genie_NonRESBGvbarpNC1pi_Genie_Up",
+			       "genie_R0COHpi_Genie_Down", "genie_R0COHpi_Genie_Up",
+			       "beamflux_Down", "beamflux_Up"
+};
+
+const int N_syst_category = 14;
+TString systematics_category[] = {"genie_FormZone_Genie",
+				  "genie_FrAbs_pi_Genie",
+				  "genie_MaCCQE_Genie",
+				  "genie_MaCCRES_Genie",
+				  "genie_MaCOHpi_Genie",
+				  "genie_MaNCEL_Genie",
+				  "genie_MaNCRES_Genie",
+				  "genie_MvCCRES_Genie",
+				  "genie_MvNCRES_Genie",
+				  "genie_NonRESBGvbarpCC1pi_Genie",
+				  "genie_NonRESBGvbarpCC2pi_Genie",
+				  "genie_NonRESBGvbarpNC1pi_Genie",
+				  "genie_R0COHpi_Genie",
+				  "beamflux"
+};
+
+TString systematics_names[] = {"GENIE_FormZone",
+			       "GENIE_FrAbs_pi",
+			       "GENIE_MaCCQE",
+			       "GENIE_MaCCRES",
+			       "GENIE_MaCOHpi",
+			       "GENIE_MaNCEL",
+			       "GENIE_MaNCRES",
+			       "GENIE_MvCCRES",
+			       "GENIE_MvNCRES",
+			       "GENIE_NonRESBGvbarpCC1pi",
+			       "GENIE_NonRESBGvbarpCC2pi",
+			       "GENIE_NonRESBGvbarpNC1pi",
+			       "GENIE_R0COHpi",
+			       "Beam Flux"
+};
+
+const int N_MC_category = 6;
+TString MC_category[N_MC_category] = {"NueCC", "NumuCC", "NC", "External_NumuCC", "External_NueCC", "External_NC"};
+
 
 const int N_smear_bit = 8;
 TString smear_flags[N_smear_bit] = {"NONE", "P", "Theta", "P_Theta", "Phi", "P_Phi", "Phi_Theta", "All"};
