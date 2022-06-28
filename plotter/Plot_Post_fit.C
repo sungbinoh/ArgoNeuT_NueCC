@@ -4,7 +4,9 @@
 void openfile(TString histname, TString which_fit){
   TString WORKING_DIR = getenv("ArNeuT_WD");
   //TString filename = WORKING_DIR + "/output/fits/fitDiagnostics_fit_result.root";
-  TString filename = WORKING_DIR + "/output/fits/fitDiagnostics_fit_result_NoGenieExtSignal.root";
+  //TString filename = WORKING_DIR + "/output/fits/fitDiagnostics_fit_result_NoGenieExtSignal.root";
+  TString filename = WORKING_DIR + "/output/fits/fitDiagnostics_fit_result_NoGenieExt.root";
+
   TFile *current_file = new TFile ((filename)) ;
   gDirectory->cd(which_fit);
   gDirectory->cd("bin1");

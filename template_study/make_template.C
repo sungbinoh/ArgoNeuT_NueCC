@@ -26,20 +26,20 @@ void open_file_data(TString dir, TString histname){
   delete current_file;
 }
 
-void open_file_mc(TString which_vew, TString MC_syst, TString histname){
+void open_file_mc(TString which_view, TString MC_syst, TString histname){
 
   TString input_file_dir = getenv("ArNeuT_WD");
   TString root_file_path =input_file_dir + "/output/hists_mc_fit_0p4to0p9_beamflux_SetNanWeightTo1.root";
   TFile *current_file = new TFile ((root_file_path)) ;
-  TString dir = which_vew + "_" + MC_syst;
+  TString dir = which_view + "_" + MC_syst;
   gDirectory->cd(dir);
-  TH1D * current_hist = (TH1D*)gDirectory -> Get(histname + "_" + which_vew + "_" + MC_syst);
+  TH1D * current_hist = (TH1D*)gDirectory -> Get(histname + "_" + which_view + "_" + MC_syst);
   if(current_hist){
     current_hist -> SetDirectory(0);
-    if(debug) cout << "[open_file_mc] We have " +  histname + "_" + which_vew + "_" + MC_syst << endl;
+    if(debug) cout << "[open_file_mc] We have " +  histname + "_" + which_view + "_" + MC_syst << endl;
   }
   else{
-    if(debug) cout << "[open_file_mc] We do not have " +  histname + "_" + which_vew + "_" + MC_syst << endl;
+    if(debug) cout << "[open_file_mc] We do not have " +  histname + "_" + which_view + "_" + MC_syst << endl;
   }
   TH1::AddDirectory(kFALSE);
 
@@ -67,16 +67,26 @@ void make_histogram(TString histname, int N_bin, double binx[]){
     maphist[this_hist_name + "_centralrebin"] -> Write();
     
     for(int j = 0; j < N_syst_category; j++){
-      TString this_hist_name = histname + MC_category[i] + "_" + systematics_category[j];
+      //TString this_hist_name = histname + MC_category[i] + "_" + systematics_category[j];
       TString this_hist_name_Up = histname + MC_category[i] + "_" + systematics_category[j] + "_Up";
       TString this_hist_name_Down = histname + MC_category[i] + "_" + systematics_category[j] + "_Down";
 
       maphist[this_hist_name_Up + "rebin"] = (TH1D*)maphist[this_hist_name_Up] -> Rebin(N_bin - 1, this_hist_name_Up + "rebin", binx);
       maphist[this_hist_name_Up + "rebin"] -> SetName(MC_category[i] + "_" + systematics_category[j] + "Up");
+      if(MC_category[i] == "NueCC" && systematics_category[j].Contains("genie")){ // == Preserve normalization of signal syst shapes
+	double integral_central = maphist[this_hist_name + "_centralrebin"] -> Integral();
+	double integral_Up = maphist[this_hist_name_Up + "rebin"] -> Integral();
+	maphist[this_hist_name_Up + "rebin"] -> Scale(integral_central / integral_Up);
+      }
       maphist[this_hist_name_Up + "rebin"] -> Write();
 
       maphist[this_hist_name_Down + "rebin"] = (TH1D*)maphist[this_hist_name_Down] -> Rebin(N_bin - 1, this_hist_name_Down + "rebin",binx);
       maphist[this_hist_name_Down + "rebin"] -> SetName(MC_category[i] + "_" + systematics_category[j] + "Down");
+      if(MC_category[i]== "NueCC" && systematics_category[j].Contains("genie")){ // == Preserve normalization of signal syst shapes 
+	double integral_central= maphist[this_hist_name + "_centralrebin"] -> Integral();
+	double integral_Down = maphist[this_hist_name_Down + "rebin"] -> Integral();
+	maphist[this_hist_name_Down + "rebin"] ->Scale(integral_central / integral_Down);
+      }
       maphist[this_hist_name_Down + "rebin"] -> Write();
     }
   }
