@@ -276,8 +276,8 @@ void Draw_stacked_plot(TString which_view, TString histname, double xmin, double
   ////////////////////////////////////
   TString pdfname;
   TString WORKING_DIR = getenv("ArNeuT_WD");
-  if(draw_Data_vs_External) pdfname = WORKING_DIR + "/output/plots/" + nameofhistogram + "_Data_vs_External_fit.pdf";
-  else pdfname = WORKING_DIR + "/output/plots/" + nameofhistogram + "_fit.pdf";
+  if(draw_Data_vs_External) pdfname = WORKING_DIR + "/output/plots/External_bkg_fit/" + nameofhistogram + "_Data_vs_External_fit.pdf";
+  else pdfname = WORKING_DIR + "/output/plots/External_bkg_fit/" + nameofhistogram + "_fit.pdf";
   mapcanvas[canvas] -> SaveAs(pdfname);
   
 }

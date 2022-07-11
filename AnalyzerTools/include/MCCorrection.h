@@ -36,7 +36,9 @@ public:
   bool IgnoreNoHist;
 
   double BeamFlux_SF(int nu_PID, double nu_E, int sys);
+  double External_bkg_corr(TString pNueCC_str, double pNueCC);
   std::map< TString, TH1D* > map_hist_BeamFlux;
+  std::map< TString, TH1D* > map_hist_ExtCorr;
 
 };
 

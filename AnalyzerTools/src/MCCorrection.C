@@ -42,8 +42,34 @@ void MCCorrection::ReadHistograms(){
     }
   }
 
+  //==== External Bkg
+  TString External_bkg_path = datapath+"/External/";
+  ifstream in_External_bkg(External_bkg_path + "histmap.txt");
+  while(getline(in_External_bkg,elline)){
+    std::istringstream is( elline );
+
+    TString tstring_elline = elline;
+    if(tstring_elline.Contains("#")) continue;
+    TString a,b,c,d,e,f;
+    is >> a; // Ext_Corr
+    is >> b; // SF
+    is >> c; // pNueCC, pNueCC2
+    is >> d; // <rootfilename>
+    is >> e; // <histname>
+    is >> f; // Class
+    TFile *file = new TFile(External_bkg_path + d);
+    if(f=="TH1D"){
+      histDir->cd();
+      map_hist_ExtCorr[a + "_" + b + "_" + c] = (TH1D *) file -> Get(e) -> Clone();
+    }
+  }
+
   cout << "[MCCorrection::ReadHistograms] map_hist_BeamFlux :" << endl;
   for(std::map< TString, TH1D* >::iterator it = map_hist_BeamFlux.begin(); it != map_hist_BeamFlux.end(); it++){
+    cout << "[MCCorrection::ReadHistograms] key = " << it -> first << endl;
+  }
+  cout << "[MCCorrection::ReadHistograms] map_hist_ExtCorr :" << endl;
+  for(std::map< TString, TH1D* >::iterator it = map_hist_ExtCorr.begin(); it != map_hist_ExtCorr.end(); it++){
     cout << "[MCCorrection::ReadHistograms] key = " << it -> first << endl;
   }
 
@@ -83,4 +109,21 @@ double MCCorrection::BeamFlux_SF(int nu_PID, double nu_E, int sys){
 
   return value+double(sys)*error;
 
+}
+
+double MCCorrection::External_bkg_corr(TString pNueCC_str, double pNueCC){
+
+  TH1D *this_hist = map_hist_ExtCorr["Ext_Corr_SF_" + pNueCC_str];
+  if(!this_hist){
+    if(IgnoreNoHist) return 1.;
+    else{
+      cerr << "[MCCorrection::MuonReco_SF] No "<< "Ext_Corr_SF_" + pNueCC_str << endl;
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  int this_bin = this_hist->FindBin(pNueCC);
+  double value = this_hist->GetBinContent(this_bin);
+
+  return value;
 }

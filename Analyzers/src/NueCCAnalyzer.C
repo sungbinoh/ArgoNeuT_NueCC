@@ -17,27 +17,30 @@ void NueCCAnalyzer::initializeAnalyzer(){
   //===========================
   // == volume_index : 0 (active volume), 1 (fiducial volume)
   volume_index = 0;
-  FV_TPC.SetFV(0., 47., -20., 20., 0., 90.); // == Active Volume 
+  FV_TPC.SetFV(1., 46., -19., 19., 2., 76.); // == Active Volume 
   FV1.SetFV(3., 44., -16., 16., 6., 70.); // == Fiducial volume (the same volume with the previous analysis)
-  FV2.SetFV(5., 47., -15., 15., 5., 85.); // == Volume for Signal region
+  FV2.SetFV(2.5, 46., -19.5, 19.5, 2.5, 76.); // == Volume for Nearestz cut
   FV3.SetFV(-3., 50., -23., 23., 10., 80.); // == Volume for Minos veto.
 
   //=========
   //== Cuts
   //=========
-  cut_nhits = 50;
+  cut_nhits = 25;
   //cut_nearestz = 0.5; // == default cut by Wanwei
-  cut_nearestz_bellow = 10.;
-  cut_nearestz_upper = 80.;
+  //cut_nearestz_bellow = 10.;
+  //cut_nearestz_upper = 80.;
   if (volume_index == 0) {
-    cut_nearestz_bellow = 0.5; // == Cut for the active volume
+    //cut_nearestz_bellow = 0.5; // == Cut for the active volume
+    //2.5 <=Nearest z <= 76
+    //2.5 <=Nearest x(z) <= 46
+    //-19.5 <=Nearest y(z) <= 19.5
   }
   else if (volume_index == 1) {
-    cut_nearestz_bellow = 2.5; // = Cut for the fiducial volume
+    //cut_nearestz_bellow = 2.5; // = Cut for the fiducial volume
   }
   cut_pNueCC = 0.99;
   cut_pNueCC2 = 0.99;
- 
+
   //===========================
   // == Setup Event Variables
   //===========================
@@ -53,7 +56,17 @@ void NueCCAnalyzer::executeEvent(){
   //=============
   //== Booleans
   //=============
-  isPassNhits = (this_StandardRecoNtuple.no_hits >= cut_nhits);
+  int nhits_0 = 0;
+  int nhits_1 = 0;
+  for(int i = 0; i < this_StandardRecoNtuple.no_hits; i++){
+    if(this_StandardRecoNtuple.hit_plane[i] == 0) {
+      nhits_0++;
+    }
+    else if(this_StandardRecoNtuple.hit_plane[i] == 1) {
+      nhits_1++;
+    }
+  }
+  isPassNhits = IsPassNhits(nhits_0, nhits_1);
 
   isPassAntiMINOS = true;
   for (int i = 0; i < this_StandardRecoNtuple.ntracks_minos; ++i) {
@@ -68,7 +81,16 @@ void NueCCAnalyzer::executeEvent(){
     }
     if (!isPassAntiMINOS) break;
   }
-  isPassNearestz = (this_StandardRecoNtuple.nearestz[2] >= cut_nearestz_bellow);
+  
+  TVector3 nearestz_vec(this_StandardRecoNtuple.nearestz[0], this_StandardRecoNtuple.nearestz[1], this_StandardRecoNtuple.nearestz[2]);
+  isPassNearestz = FV2.InFV(nearestz_vec);
+  /*
+  if(this_StandardRecoNtuple.nearestz[0] > cut_nearestz_X_bellow && this_StandardRecoNtuple.nearestz[0] < cut_nearestz_X_upper
+     && this_StandardRecoNtuple.nearestz[1] > cut_nearestz_Y_bellow && this_StandardRecoNtuple.nearestz[1] < cut_nearestz_Y_upper
+     &&this_StandardRecoNtuple.nearestz[2] > cut_nearestz_Z_bellow && this_StandardRecoNtuple.nearestz[2] < cut_nearestz_Z_upper){
+    isPassNearestz = true;
+  }
+  */
   //bool isPassNearestz = (this_StandardRecoNtuple.nearestz[2] >= cut_nearestz_bellow) && (this_StandardRecoNtuple.nearestz[2] <= cut_nearestz_upper);
 
   TVector3 vertex(this_StandardRecoNtuple.vtxx_reco, this_StandardRecoNtuple.vtxy_reco, this_StandardRecoNtuple.vtxz_reco);
@@ -100,13 +122,21 @@ void NueCCAnalyzer::executeEvent(){
   //==== Set suffix for histograms
   //===============================
   TString suffix = "Data";
+  bool is_cryo = false;
   if(!IsData){
     Get_vtx_position_and_which_interaction();
     suffix = str_interaction;
     // == External?
     //cout << "best_vtx_position = (" << best_vtx_position.X() << ", " << best_vtx_position.Y() << ", " << best_vtx_position.Z() << ")" <<endl;
     bool isInside = FV_TPC.InFV(best_vtx_position);
-    if(!isInside) suffix = "External_" + suffix;
+    if(!isInside){
+      suffix = "External_" + suffix;
+      TVector3 active_volume_center(23.5, 0., 45.);
+      double this_distance = (best_vtx_position - active_volume_center).Mag();
+      is_cryo = (this_distance < 100.);
+      if(is_cryo) suffix = suffix + "_Cryo";
+      else suffix = suffix + "_NotCryo";
+    }
   }
 
   //===================
@@ -119,44 +149,76 @@ void NueCCAnalyzer::executeEvent(){
   double pot_weight = 1.;
   if(!IsData){
     pot_weight = data_pot / mc_pot;
-    //double beamflux_weight = mcCorr->BeamFlux_SF((*this_StandardRecoNtuple.nuPDG_truth_multiple)[best_neutrino_number], (*this_StandardRecoNtuple.enu_truth_multiple)[best_neutrino_number], 0);
+
     beamflux_weight = mcCorr->BeamFlux_SF(this_StandardRecoNtuple.nuPDG_truth, this_StandardRecoNtuple.enu_truth, 0);
     beamflux_weight_Up = mcCorr->BeamFlux_SF(this_StandardRecoNtuple.nuPDG_truth, this_StandardRecoNtuple.enu_truth, 1);
     beamflux_weight_Down = mcCorr->BeamFlux_SF(this_StandardRecoNtuple.nuPDG_truth, this_StandardRecoNtuple.enu_truth, -1);
 
-    //cout << "beamflux_weight : " << beamflux_weight << ", beamflux_weight_Up : " << beamflux_weight_Up << ", beamflux_weight_Down : " << beamflux_weight_Down << endl;
-
     // == External background scaling
     ext_reweight_1view = 1.;
     ext_reweight_2view = 1.;
-    if(suffix.Contains("External")){
+    if(suffix.Contains("External") && !is_cryo){
       // == p0, p1 in [0.7, 0.9]
       /*
       double p0_1view = 6.216;
       double p1_1view = -4.754;
       double p0_2view = 10.366;
       double p1_2view = -7.668;
-      */
       // == p0, p1 in [0.4, 0.9]
       double p0_1view = 3.895;
       double p1_1view = -1.928;
       double p0_2view = 7.171;
       double p1_2view = -3.840;
+      */
+      // == p0, p1 in [0.45, 0.9] for Not Cryo
+      double p0_1view = 3.194;
+      double p1_1view = -2.274;
+      double p0_2view = 5.602;
+      double p1_2view = -3.294;
 
-      // ==  Default ext_reweight values are 1.0
-      ext_reweight_1view = p0_1view + p1_1view * pNueCC;
-      ext_reweight_2view = p0_2view + p1_2view * pNueCC2;
+      ext_reweight_1view = mcCorr->External_bkg_corr("pNueCC", pNueCC);
+      ext_reweight_2view = mcCorr->External_bkg_corr("pNueCC2", pNueCC2);
+      /*
+      cout << "[NueCCAnalyzer::executeEvent] [" << this_StandardRecoNtuple.run << ":" << this_StandardRecoNtuple.event << "]" << endl;
+      cout << "[NueCCAnalyzer::executeEvent] pNueCC : " << pNueCC << ", ExtCorr : " << ext_reweight_1view << endl;
+      cout << "[NueCCAnalyzer::executeEvent] pNueCC2 : "<< pNueCC2 << ", ExtCorr : " << ext_reweight_2view << endl;
+      */
+      if(pNueCC > 0.45){
+	ext_reweight_1view = p0_1view + p1_1view * pNueCC;
+      }
+      if(pNueCC2 > 0.45){
+	ext_reweight_2view = p0_2view + p1_2view * pNueCC2;
+      }
 
-      //cout << "SB debug, pNueCC : " << pNueCC << ", pNueCC2 : " << pNueCC2 << ", ext_reweight_1view : " << ext_reweight_1view << ", ext_reweight_2view : " << ext_reweight_2view << endl;
+      // == fit parameters for otherfunctions
+      /*
+      // 1. [0] * x * exp([1] * x) + [2] * exp([3] * x)/x + [4] for pNueCC2
+      double p0_1 = 1.91162e+02;
+      double p1_1 = -7.32827;;
+      double p2_1 = -2.78591e-01 ;
+      double p3_1 = -2.15808e+02;
+      double p4_1 = 3.16400;
+      double ext_reweight_1_2view = p0_1 * pNueCC2 * exp(p1_1*pNueCC2) + p2_1 * exp(p3_1 * pNueCC2) / pNueCC2 + p4_1;
+      if(ext_reweight_1_2view < 0.) ext_reweight_1_2view = 0.;
+      // 2. [0] * x * exp([1] * x) + [2] * exp([3] * x)/x + [4] /x + [5]
+      double p0_2 = -8.90125e+03;
+      double p1_2 = -2.42296e+02;
+      double p2_2 = -3.86198e-01;
+      double p3_2 = -1.16362e+01;
+      double p4_2 = 4.35563e-01;
+      double p5_2 = 1.96238e+0;
+      double ext_reweight_2_1view = p0_2 * pNueCC * exp(p1_2 * pNueCC) + p2_2 * exp(p3_2 * pNueCC) / pNueCC + p4_2 / pNueCC + p5_2;
+      if(ext_reweight_2_1view < 0.) ext_reweight_2_1view = 0.;
+      ext_reweight_2view = ext_reweight_1_2view;
+      ext_reweight_1view = ext_reweight_2_1view;
+      */
     }
-
-    //cout << "[Run:Event] = [" << this_StandardRecoNtuple.run << ":" << this_StandardRecoNtuple.event << "] pot_weight : " << pot_weight << ", beamflux_weight  : " << beamflux_weight << ", weight : " << weight << ", suffix : " << suffix << endl;
-    //cout << "best_neutrino_number : "  << best_neutrino_number << ", multiple 0 PDG = " << (*this_StandardRecoNtuple.nuPDG_truth_multiple)[0] << ", multiple 0 enu" << (*this_StandardRecoNtuple.enu_truth_multiple)[0] << ", nuPDG_truth = " << this_StandardRecoNtuple.nuPDG_truth << ", enu_truth = " <<  this_StandardRecoNtuple.enu_truth << endl;
   }
   weight *= pot_weight;
 
   if(IsData){
     Plot(suffix + "_central", 1.);
+    Plot_others(suffix + "_central", 1.);
   }
   else{
 
@@ -167,6 +229,9 @@ void NueCCAnalyzer::executeEvent(){
     Plot("TwoView_" + suffix + "_central", weight * ext_reweight_2view * beamflux_weight);
     Plot("OneView_" + suffix + "_central_NoExtReweight", weight * beamflux_weight);
     Plot("TwoView_" + suffix + "_central_NoExtReweight", weight * beamflux_weight);
+    Plot_others("OneView_" + suffix + "_central", weight * beamflux_weight);
+    Plot_others("TwoView_" + suffix + "_central", weight * beamflux_weight);
+
 
     // == For loop for GENIE parameter uncertainties
     unsigned int size_evtwgt_weight = (*this_StandardRecoNtuple.evtwgt_weight).size();
@@ -190,18 +255,21 @@ void NueCCAnalyzer::executeEvent(){
 	}
       }
 
+      /*
       Plot("OneView_" + suffix + "_" + syst_Up, weight * ext_reweight_1view * beamflux_weight * weight_Up );
       Plot("OneView_" + suffix + "_" + syst_Down, weight * ext_reweight_1view * beamflux_weight * weight_Down );
       Plot("TwoView_" + suffix + "_" + syst_Up, weight * ext_reweight_2view * beamflux_weight * weight_Up );
       Plot("TwoView_" + suffix + "_" + syst_Down, weight * ext_reweight_2view * beamflux_weight * weight_Down );
-
+      */
     } 
 
-    // == Beam flux reweight
+    // == Beam flux reweight error
+    /*
     Plot("OneView_" + suffix + "_beamflux_Up", weight * ext_reweight_1view * beamflux_weight_Up);
     Plot("OneView_" + suffix + "_beamflux_Down", weight * ext_reweight_1view * beamflux_weight_Down);
     Plot("TwoView_" + suffix + "_beamflux_Up", weight * ext_reweight_2view * beamflux_weight_Up);
     Plot("TwoView_" + suffix + "_beamflux_Down", weight * ext_reweight_2view * beamflux_weight_Down);
+    */
 
     // == External Background syst
     // == NONE. Just Normalization error for now...
@@ -241,10 +309,53 @@ void NueCCAnalyzer::Plot(TString suffix, double weight){
 	  if(pNueCC2 > 0.991) JSFillHist(suffix, "Cutflow_" + suffix, 6.5, weight, 10, 0., 10.);
 	  JSFillHist(suffix, "pNueCC_vtx_" + suffix, pNueCC, weight, 1000, 0., 1.);
 	  JSFillHist(suffix, "pNueCC2_vtx_" + suffix, pNueCC2, weight, 1000, 0., 1.);
+	  JSFillHist(suffix, "pNueCC_vs_pNueCC2_vtx_" + suffix, pNueCC, pNueCC2, weight, 50, 0., 1., 50, 0., 1.);
 	}
       }
     }
   }
+}
+
+void NueCCAnalyzer::Plot_others(TString suffix, double weight){
+  if(isPassNhits){
+    if(isPassAntiMINOS){
+      JSFillHist(suffix, "NearestZ_X_" + suffix, this_StandardRecoNtuple.nearestz[0], weight, 50, 0., 50.);
+      JSFillHist(suffix, "NearestZ_Y_" + suffix, this_StandardRecoNtuple.nearestz[1], weight, 40, -20., 20.);
+      JSFillHist(suffix, "NearestZ_Z_" + suffix, this_StandardRecoNtuple.nearestz[2], weight, 80, 0., 80.);
+
+      // == Verify if linear fit is availiable for external backgrounds
+      if(!IsData){
+	//best_vtx_position
+	TVector3 active_volume_center(23.5, 0., 45.);
+	double this_distance = (best_vtx_position - active_volume_center).Mag();
+	bool is_cryo = (this_distance < 100.);
+	if(this_distance < 100.) is_cryo = 0.5;
+	if(is_cryo){
+	  JSFillHist(suffix, "pNueCC_isCryo_" + suffix, pNueCC, weight,50, 0.,1.);
+          JSFillHist(suffix, "pNueCC2_isCryo_" + suffix, pNueCC2, weight, 50, 0.,1.);
+	}
+	else{
+	  JSFillHist(suffix, "pNueCC_isnotCryo_" + suffix, pNueCC, weight, 50, 0., 1.);
+	  JSFillHist(suffix, "pNueCC2_isnotCryo_" + suffix, pNueCC2, weight, 50, 0.,1.);
+	}
+      }
+
+      if(isPassVertex){
+      }
+    }
+  }
+
+}
+
+bool NueCCAnalyzer::IsPassNhits(int nhits_0, int nhits_1){
+
+  bool this_decision = false;
+  double ratio = (nhits_1 + 0.) / (nhits_0 + 0.);
+  if(nhits_0 >= cut_nhits && nhits_1 >= cut_nhits && ratio > cut_nhits_ratio_bellow && ratio < cut_nhits_ratio_upper){
+    this_decision = true;
+  }
+
+  return this_decision;
 }
 
 TString NueCCAnalyzer::Get_suffix(int nu_PDG){

@@ -35,7 +35,7 @@ void open_file_mc(TString which_view, TString dir, TString histname){
 
   TString input_file_dir = getenv("ArNeuT_WD");
   //TString root_file_path =input_file_dir + "/output/hists_mc.root";
-  TString root_file_path =input_file_dir + "/output/hists_mc_fit_0p7to0p9_beamflux.root";
+  TString root_file_path =input_file_dir + "/output/hists_mc_exp_fit.root";
   //TString root_file_path =input_file_dir + "/output/hists_mc_fit_0p7to0p9.root";
   
   TFile *current_file = new TFile ((root_file_path)) ;
@@ -284,10 +284,10 @@ void Draw_basic_plots(){
 
   // == Draw_plot(histname, xmin, xmax, rebin)
   //submit_stack_plot("Cutflow", 0., 10., 1.);
-  //submit_stack_plot("pNueCC_vtx", 0., 1.0, 50.);
-  //submit_stack_plot("pNueCC2_vtx", 0., 1.0, 50.);
+  submit_stack_plot("pNueCC_vtx", 0., 1.0, 50.);
+  submit_stack_plot("pNueCC2_vtx", 0., 1.0, 50.);
   //submit_stack_plot("pNueCC_vtx", 0.9, 1.0, 10.);
-  submit_stack_plot("pNueCC2_vtx", 0.9, 1.0, 10.);
+  //submit_stack_plot("pNueCC2_vtx", 0.9, 1.0, 10.);
 
 
   /*
